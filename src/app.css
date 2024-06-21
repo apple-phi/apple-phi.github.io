@@ -12,7 +12,7 @@ a {
 
 @font-face {
   font-family: "LetsJazz";
-  src: url("$lib/assets/fonts/LetsJazz.otf");
+  src: url("/assets/fonts/LetsJazz.otf");
   font-display: swap;
 }
 

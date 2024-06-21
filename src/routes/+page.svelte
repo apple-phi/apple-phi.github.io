@@ -1,8 +1,8 @@
 <script lang="ts">
-	import peepEyesOpen from '$lib/assets/images/peep-eyes-open.svg';
-	import peepEyesClosed from '$lib/assets/images/peep-eyes-closed.svg';
-	import githubIcon from '$lib/assets/icons/github.svg';
-	import linkedinIcon from '$lib/assets/icons/linkedin.svg';
+	import peepEyesOpen from '/assets/images/peep-eyes-open.svg';
+	import peepEyesClosed from '/assets/images/peep-eyes-closed.svg';
+	import githubIcon from '/assets/icons/github.svg';
+	import linkedinIcon from '/assets/icons/linkedin.svg';
 </script>
 
 <div class="absolute top-0"><nav></nav></div>
