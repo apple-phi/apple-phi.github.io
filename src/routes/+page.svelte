@@ -1,2 +1,44 @@
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to read the documentation</p>
+<script lang="ts">
+	import peepEyesOpen from '$lib/assets/images/peep-eyes-open.svg';
+	import peepEyesClosed from '$lib/assets/images/peep-eyes-closed.svg';
+	import githubIcon from '$lib/assets/icons/github.svg';
+	import linkedinIcon from '$lib/assets/icons/linkedin.svg';
+</script>
+
+<div class="absolute top-0"><nav></nav></div>
+
+<div class="flex h-screen bg-stone-50 p-10">
+	<div class="m-auto">
+		<div class="group flex flex-col-reverse items-center sm:flex-row">
+			<div class="peer h-min space-y-12">
+				<h1
+					class="font-display text-4xl underline decoration-orange-500 decoration-wavy underline-offset-8"
+				>
+					Hiya, I'm Lucas
+				</h1>
+				<p class="text-md max-w-96 !leading-relaxed">
+					I'm a student of Information and Computer Engineering at the University of Cambridge. I
+					love technology, interior design, and being outdoors.
+				</p>
+				<div class="flex gap-2">
+					<a href="https://github.com/apple-phi" target="_blank" rel="noopener noreferrer">
+						<img src={githubIcon} class="inline-block h-6 w-6" alt="GitHub icon" />
+					</a>
+					<a href="https://linkedin.com/in/lucas-ng123" target="_blank" rel="noopener noreferrer">
+						<img src={linkedinIcon} class="inline-block h-6 w-6" alt="LinkedIn icon" />
+					</a>
+				</div>
+			</div>
+			<img
+				src={peepEyesClosed}
+				class="peer w-1/2 group-has-[:hover]:hidden"
+				alt="A cartoon of Lucas"
+			/>
+			<img
+				src={peepEyesOpen}
+				class="hidden w-1/2 group-has-[:hover]:block"
+				alt="A cartoon of Lucas"
+			/>
+		</div>
+	</div>
+</div>

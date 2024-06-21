@@ -1,6 +1,26 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* * {
+  border: 1px solid red;
+} */
+
+a {
+  @apply underline decoration-wavy text-blue-600 hover:text-blue-800 visited:text-purple-600
+}
+
+@font-face {
+  font-family: "LetsJazz";
+  src: url("$lib/assets/fonts/LetsJazz.otf");
+  font-display: swap;
+}
+
+@font-face{
+  font-family: "Syne", sans-serif;
+  src: url('https://fonts.googleapis.com/css2?family=Syne:wght@400..800&display=swap');
+  font-optical-sizing: auto;
+}
  
 @layer base {
   :root {
