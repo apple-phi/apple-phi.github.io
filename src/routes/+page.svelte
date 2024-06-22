@@ -5,8 +5,6 @@
 	import linkedinIcon from '/assets/icons/linkedin.svg';
 </script>
 
-<div class="absolute top-0"><nav></nav></div>
-
 <div class="flex h-screen bg-stone-50 p-10">
 	<div class="m-auto">
 		<div class="group sm:flex sm:flex-row-reverse">
