@@ -9,8 +9,14 @@
 
 <div class="flex h-screen bg-stone-50 p-10">
 	<div class="m-auto">
-		<div class="group flex flex-col-reverse items-center sm:flex-row">
-			<div class="peer h-min space-y-12">
+		<div class="group sm:flex sm:flex-row-reverse">
+			<img src={peepEyesClosed} class="w-1/2 group-has-[:hover]:hidden" alt="A cartoon of Lucas" />
+			<img
+				src={peepEyesOpen}
+				class="hidden w-1/2 group-has-[:hover]:block"
+				alt="A cartoon of Lucas"
+			/>
+			<div class="h-min space-y-12">
 				<h1
 					class="font-display text-4xl underline decoration-orange-500 decoration-wavy underline-offset-8"
 				>
@@ -29,16 +35,6 @@
 					</a>
 				</div>
 			</div>
-			<img
-				src={peepEyesClosed}
-				class="peer w-1/2 group-has-[:hover]:hidden"
-				alt="A cartoon of Lucas"
-			/>
-			<img
-				src={peepEyesOpen}
-				class="hidden w-1/2 group-has-[:hover]:block"
-				alt="A cartoon of Lucas"
-			/>
 		</div>
 	</div>
 </div>
