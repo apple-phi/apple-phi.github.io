@@ -1,8 +1,8 @@
 <script lang="ts">
-	import peepEyesOpen from '/assets/images/peep-eyes-open.svg';
-	import peepEyesClosed from '/assets/images/peep-eyes-closed.svg';
-	import githubIcon from '/assets/icons/github.svg';
-	import linkedinIcon from '/assets/icons/linkedin.svg';
+	import peepEyesOpen from '$lib/svg/peep-eyes-open.svg';
+	import peepEyesClosed from '$lib/svg/peep-eyes-closed.svg';
+	import githubIcon from '$lib/svg/github.svg';
+	import linkedinIcon from '$lib/svg/linkedin.svg';
 </script>
 
 <div class="flex h-screen bg-stone-50 p-10">
