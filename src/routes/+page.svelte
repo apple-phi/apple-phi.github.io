@@ -1,12 +1,15 @@
 <script lang="ts">
+	import Anim from './HeroAnimation.svelte';
+
 	import peepEyesOpen from '$lib/svg/peep-eyes-open.svg';
 	import peepEyesClosed from '$lib/svg/peep-eyes-closed.svg';
 	import githubIcon from '$lib/svg/github.svg';
 	import linkedinIcon from '$lib/svg/linkedin.svg';
 </script>
 
-<div class="flex h-screen bg-stone-50 p-10">
-	<div class="m-auto">
+<div class="relative flex h-screen bg-stone-50">
+	<Anim />
+	<div class="z-10 m-auto rounded-2xl bg-inherit px-10 !pb-0 pt-14">
 		<div class="group sm:flex sm:flex-row-reverse">
 			<img src={peepEyesClosed} class="w-1/2 group-has-[:hover]:hidden" alt="A cartoon of Lucas" />
 			<img
