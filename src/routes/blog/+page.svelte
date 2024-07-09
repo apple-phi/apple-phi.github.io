@@ -11,8 +11,8 @@
 <BgGridEffect />
 
 <section class="sm:pt-30 relative flex min-h-screen p-7 pt-20 md:pt-40">
-	<div class="mx-auto space-y-12 sm:w-3/4 lg:w-1/2">
-		<div class="text-left">
+	<div class="mx-auto sm:w-3/4 lg:w-1/2">
+		<div class="pb-8 pt-12 text-left">
 			<h1
 				class="font-display text-3xl underline decoration-orange-500 decoration-wavy underline-offset-8 sm:text-4xl"
 			>
@@ -20,7 +20,7 @@
 			</h1>
 		</div>
 
-		<ul class="space-y-8 pt-5 sm:pt-10">
+		<ul class="space-y-4 pt-5 sm:space-y-8 sm:pt-10">
 			{#each data.posts as post}
 				<li class=" rounded-2xl transition-transform hover:scale-[1.02]">
 					<a href="/blog/{post.slug}" class="block">

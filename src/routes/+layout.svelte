@@ -25,7 +25,7 @@
 	</section>
 	<section class="sticky bottom-0 w-screen sm:absolute">
 		<footer class="flex justify-center">
-			<div class="bg-stone-50 p-2 text-sm">
+			<div class="bg-stone-50 p-1 text-sm sm:p-2">
 				<p class="text-xs text-stone-500 opacity-80 md:text-sm">
 					Lucas Ng &copy; 2024 | See the code for my site
 					<a
