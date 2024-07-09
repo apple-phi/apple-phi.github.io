@@ -28,14 +28,18 @@
 				{subtitle}
 			</h2>
 			<div class="mt-6 flex gap-6">
-				<div class="flex items-center">
-					<img src={calendarIcon} class="inline-block h-6 w-6" alt="Calendar icon" />
-					<p class="ml-1 text-xs text-gray-500">{date}</p>
-				</div>
-				<div class="flex items-center">
-					<img src={labelIcon} class="inline-block h-6 w-6" alt="Label icon" />
-					<p class="ml-1 text-xs text-gray-500">{tags.join(', ')}</p>
-				</div>
+				{#if date}
+					<div class="flex items-center">
+						<img src={calendarIcon} class="inline-block h-6 w-6" alt="Calendar icon" />
+						<p class="ml-1 text-xs text-gray-500">{date}</p>
+					</div>
+				{/if}
+				{#if tags?.length > 0}
+					<div class="flex items-center">
+						<img src={labelIcon} class="inline-block h-6 w-6" alt="Label icon" />
+						<p class="ml-1 text-xs text-gray-500">{tags.join(', ')}</p>
+					</div>
+				{/if}
 			</div>
 		</div>
 		<PostContent />

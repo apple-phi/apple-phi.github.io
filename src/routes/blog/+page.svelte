@@ -11,7 +11,7 @@
 <BgGridEffect />
 
 <section class="relative flex min-h-screen pt-40">
-	<div class="mx-auto w-1/2 space-y-12">
+	<div class="mx-auto space-y-12 sm:w-3/4 lg:w-1/2">
 		<div class="text-left">
 			<h1
 				class="font-display text-4xl underline decoration-orange-500 decoration-wavy underline-offset-8"
@@ -34,14 +34,18 @@
 								{post.subtitle}
 							</h3>
 							<div class="mt-6 flex gap-6">
-								<div class="flex items-center">
-									<img src={calendarIcon} class="inline-block h-6 w-6" alt="Calendar icon" />
-									<p class="ml-1 text-xs text-gray-500">{post.date}</p>
-								</div>
-								<div class="flex items-center">
-									<img src={labelIcon} class="inline-block h-6 w-6" alt="Label icon" />
-									<p class="ml-1 text-xs text-gray-500">{post.tags.join(', ')}</p>
-								</div>
+								{#if post.date}
+									<div class="flex items-center">
+										<img src={calendarIcon} class="inline-block h-6 w-6" alt="Calendar icon" />
+										<p class="ml-1 text-xs text-gray-500">{post.date}</p>
+									</div>
+								{/if}
+								{#if post.tags?.length > 0}
+									<div class="flex items-center">
+										<img src={labelIcon} class="inline-block h-6 w-6" alt="Label icon" />
+										<p class="ml-1 text-xs text-gray-500">{post.tags.join(', ')}</p>
+									</div>
+								{/if}
 							</div>
 						</article>
 					</a>
