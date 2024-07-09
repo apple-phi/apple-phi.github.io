@@ -1,10 +1,11 @@
 ---
-title: "Pixies, foxes and keyboard mashing"
-excerpt: What modern package management gets right and wrong
+title: "Pixies, foxes and keyboard-mashing"
+subtitle: What modern package management gets wrong about tooling
 date: "2024-07-08"
 updated: "2024-07-08"
-categories:
-  - "Opinion"
+tags:
+  - "opinion"
+  - "tooling"
 ---
 
 In progress...

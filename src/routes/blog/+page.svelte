@@ -1,16 +1,17 @@
 <script>
 	export let data;
 	import BgGridEffect from '$lib/components/BgGridEffect.svelte';
+	import { calendarIcon, labelIcon } from '$lib/svg';
 </script>
 
 <svelte:head>
-	<title>Blog</title>
+	<title>Blog | Lucas Ng</title>
 </svelte:head>
 
 <BgGridEffect />
 
-<section class="p-40">
-	<div class="mx-auto max-w-3xl space-y-12">
+<section class="relative flex min-h-screen pt-40">
+	<div class="mx-auto w-1/2 space-y-12">
 		<div class="text-left">
 			<h1
 				class="font-display text-4xl underline decoration-orange-500 decoration-wavy underline-offset-8"
@@ -19,19 +20,31 @@
 			</h1>
 		</div>
 
-		<ul class="space-y-8">
+		<ul class="space-y-8 pt-10">
 			{#each data.posts as post}
-				<li class="rounded-2xl bg-white p-6 shadow-lg transition-transform hover:scale-105">
-					<article>
-						<a href="/blog/{post.slug}" class="block">
-							<h2 class="text-2xl font-semibold text-orange-600 hover:underline">
+				<li class=" rounded-2xl transition-transform hover:scale-[1.02]">
+					<a href="/blog/{post.slug}" class="block">
+						<article>
+							<h2
+								class="inline-block bg-slate-50 text-2xl font-semibold text-orange-600 hover:underline"
+							>
 								{post.title}
 							</h2>
-						</a>
-						<p class="text-md mt-4 !leading-relaxed text-gray-700">
-							{post.excerpt}
-						</p>
-					</article>
+							<h3 class="text-md mt-2 inline-block bg-slate-50 !leading-relaxed text-gray-700">
+								{post.subtitle}
+							</h3>
+							<div class="mt-6 flex gap-6">
+								<div class="flex items-center">
+									<img src={calendarIcon} class="inline-block h-6 w-6" alt="Calendar icon" />
+									<p class="ml-1 text-xs text-gray-500">{post.date}</p>
+								</div>
+								<div class="flex items-center">
+									<img src={labelIcon} class="inline-block h-6 w-6" alt="Label icon" />
+									<p class="ml-1 text-xs text-gray-500">{post.tags.join(', ')}</p>
+								</div>
+							</div>
+						</article>
+					</a>
 				</li>
 			{/each}
 		</ul>
