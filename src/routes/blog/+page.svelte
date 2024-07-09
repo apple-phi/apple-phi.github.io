@@ -10,27 +10,29 @@
 
 <BgGridEffect />
 
-<section class="relative flex min-h-screen pt-40">
+<section class="sm:pt-30 relative flex min-h-screen p-7 pt-20 md:pt-40">
 	<div class="mx-auto space-y-12 sm:w-3/4 lg:w-1/2">
 		<div class="text-left">
 			<h1
-				class="font-display text-4xl underline decoration-orange-500 decoration-wavy underline-offset-8"
+				class="font-display text-3xl underline decoration-orange-500 decoration-wavy underline-offset-8 sm:text-4xl"
 			>
 				My blog
 			</h1>
 		</div>
 
-		<ul class="space-y-8 pt-10">
+		<ul class="space-y-8 pt-5 sm:pt-10">
 			{#each data.posts as post}
 				<li class=" rounded-2xl transition-transform hover:scale-[1.02]">
 					<a href="/blog/{post.slug}" class="block">
 						<article>
 							<h2
-								class="inline-block bg-slate-50 text-2xl font-semibold text-orange-600 hover:underline"
+								class="inline-block text-pretty bg-slate-50 text-2xl font-semibold text-orange-600 hover:underline"
 							>
 								{post.title}
 							</h2>
-							<h3 class="text-md mt-2 inline-block bg-slate-50 !leading-relaxed text-gray-700">
+							<h3
+								class="text-md mt-2 inline-block text-pretty bg-slate-50 !leading-relaxed text-gray-700"
+							>
 								{post.subtitle}
 							</h3>
 							<div class="mt-6 flex gap-6">

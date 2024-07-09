@@ -6,11 +6,11 @@
 <main class="bg-stone-50">
 	<slot></slot>
 	<section class="absolute top-0 w-screen">
-		<nav class="flex w-screen items-stretch px-8 py-6">
+		<nav class="flex w-screen items-stretch px-5 py-6 sm:px-8">
 			<div class="whitespace-nowrap">
 				<a href="/"><h1 class="text-md font-display text-orange-700">lucas.diy</h1></a>
 			</div>
-			<ul class="container flex justify-end gap-8 md:gap-12">
+			<ul class="container flex justify-end gap-4 pr-0 sm:gap-8 sm:pr-2 md:gap-12">
 				{#each navItems as { title, href }}
 					<li>
 						<a
