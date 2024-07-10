@@ -1,1 +1,2 @@
-*.lockb binary diff=lockb
+*.lockb binary diff=lockb# GitHub syntax highlighting
+pixi.lock linguist-language=YAML linguist-generated=true
