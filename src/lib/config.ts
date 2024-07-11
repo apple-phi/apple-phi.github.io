@@ -8,13 +8,39 @@ export const navItems = [
 	{
 		title: 'Blog',
 		href: '/blog'
+	},
+	{
+		title: 'Projects',
+		href: '/projects'
 	}
+	// {
+	// 	title: 'About',
+	// 	href: '/about'
+	// }
 	// {
 	// 	title: 'Resume',
 	// 	href: '/resume'
 	// },
-	// {
-	// 	title: 'Contact',
-	// 	href: '/contact'
-	// }
 ];
+
+import { githubIcon, linkedinIcon, mailIcon } from '$lib/svg';
+
+export const socialLinks = [
+	{
+		name: 'GitHub',
+		href: 'https://github.com/apple-phi/',
+		icon: githubIcon
+	},
+	{
+		name: 'LinkedIn',
+		href: 'https://www.linkedin.com/in/lucas-ng-/',
+		icon: linkedinIcon
+	},
+	{
+		name: 'Email',
+		href: 'mailto:ln373@cam.ac.uk',
+		icon: mailIcon
+	}
+];
+
+export const pastProjects = [];

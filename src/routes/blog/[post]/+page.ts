@@ -1,6 +1,6 @@
 import { error } from '@sveltejs/kit';
 import type { Component } from 'svelte';
-import type { BlogPostMetadata } from '$lib/blog/index.js';
+import type { BlogPostMetadata } from '$lib/blog';
 
 export const load = async ({ params }) => {
 	try {

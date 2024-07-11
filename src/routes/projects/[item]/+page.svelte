@@ -1,10 +1,11 @@
 <script lang="ts">
-	export let data;
-
+	import BgGridEffect from '$lib/components/BgGridEffect.svelte';
 	import { calendarIcon, labelIcon } from '$lib/svg';
 
+	export let data;
+
 	const { title, subtitle, date, tags } = data.meta;
-	const { PostContent } = data;
+	const { ProjectContent } = data;
 </script>
 
 <svelte:head>
@@ -41,6 +42,6 @@
 				{/if}
 			</div>
 		</div>
-		<PostContent />
+		<ProjectContent />
 	</div>
 </section>

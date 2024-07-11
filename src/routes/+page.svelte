@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { githubIcon, linkedinIcon, peepEyesClosed, peepEyesOpen } from '$lib/svg';
+	import { peepEyesClosed, peepEyesOpen } from '$lib/svg';
+	import { socialLinks } from '$lib/config';
 	import BgGridEffect from '$lib/components/BgGridEffect.svelte';
 </script>
 
@@ -27,21 +28,22 @@
 					</h1>
 				</div>
 				<div class="sm:text-md space-y-4 rounded-xl text-sm md:text-lg">
-					<p class="max-w-80 bg-slate-50 !leading-relaxed md:max-w-96 lg:max-w-[28rem]">
+					<p
+						class="w-fit max-w-80 rounded-md bg-stone-50 px-2 !leading-relaxed md:max-w-96 lg:max-w-[28rem]"
+					>
 						I'm a student of Information and Computer Engineering at the University of Cambridge. I
 						love technology, interior design, and being outdoors.
 					</p>
-					<p class="inline-block bg-slate-50">
+					<p class="inline-block bg-stone-50">
 						I occasionally write on my <a href="/blog" class="underline">blog</a>.
 					</p>
 				</div>
 				<div class="flex gap-3">
-					<a href="https://github.com/apple-phi" target="_blank" rel="noopener noreferrer">
-						<img src={githubIcon} class="inline-block h-6 w-6" alt="GitHub icon" />
-					</a>
-					<a href="https://linkedin.com/in/lucas-ng123" target="_blank" rel="noopener noreferrer">
-						<img src={linkedinIcon} class="inline-block h-6 w-6" alt="LinkedIn icon" />
-					</a>
+					{#each socialLinks as { name, href, icon }}
+						<a {href} target="_blank" rel="noopener noreferrer">
+							<img src={icon} class="inline-block h-6 w-6" alt="{name} icon" />
+						</a>
+					{/each}
 				</div>
 			</div>
 		</div>

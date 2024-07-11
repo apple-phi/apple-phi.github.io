@@ -10,12 +10,12 @@
 			<div class="whitespace-nowrap">
 				<a href="/"><h1 class="text-md font-display text-orange-700">lucas.diy</h1></a>
 			</div>
-			<ul class="container flex justify-end gap-4 pr-0 sm:gap-8 sm:pr-2 md:gap-12">
+			<ul class="container flex justify-end gap-3 pr-3 sm:gap-6 sm:pr-6 md:gap-12">
 				{#each navItems as { title, href }}
 					<li>
 						<a
 							{href}
-							class="bg-slate-50 p-1 text-xs text-stone-500 hover:opacity-80 focus:opacity-50 sm:text-sm"
+							class="sm:text-md bg-stone-50 p-1 text-sm text-stone-500 hover:opacity-80 focus:opacity-50"
 							>{title}</a
 						>
 					</li>
