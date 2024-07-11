@@ -12,12 +12,13 @@
 </script>
 
 <div
-	class="bg-effect absolute top-0 hidden h-screen w-screen md:block"
+	class="bg-effect absolute top-0 z-10 hidden min-h-screen w-screen md:block"
 	style="--mouse-x: {mouseX}px; --mouse-y: {mouseY}px;"
 ></div>
 
 <style>
 	.bg-effect {
+		pointer-events: none;
 		background: repeating-linear-gradient(
 				0deg,
 				transparent,

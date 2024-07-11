@@ -1,12 +1,10 @@
 import type { ImportGlobFunction } from 'vite';
+import type { Component } from 'svelte';
 
 interface MinMetadata {
 	tags: string[];
 	date: string;
 }
-
-// Return type of `import.meta.glob`
-type importMetaGlob = ReturnType<ImportGlobFunction>;
 
 // Modified from `fetchPath`
 // at https://github.com/josh-collinsworth/sveltekit-blog-starter
@@ -15,13 +13,13 @@ export async function fetchItems<T extends MinMetadata>({
 	files,
 	tag = ''
 }: {
-	files: importMetaGlob;
+	files: ReturnType<ImportGlobFunction>;
 	tag?: string;
 }): Promise<Awaited<T & { slug?: string }>[]> {
 	const items = await Promise.all(
 		Object.entries(files).map(async ([path, resolver]) => {
 			// @ts-ignore
-			const { metadata } = (await resolver()) as { metadata: T };
+			const { metadata } = (await resolver()) as { metadata: T; default: Component };
 			const slug = path.split('/').pop()?.slice(0, -3);
 			return { ...metadata, slug };
 		})

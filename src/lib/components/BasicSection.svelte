@@ -1,5 +1,6 @@
 <script lang="ts">
 	export let title: string;
+	export let gridEffect: boolean = false;
 
 	import BgGridEffect from '$lib/components/BgGridEffect.svelte';
 </script>
@@ -8,7 +9,9 @@
 	<title>{title} | Lucas Ng</title>
 </svelte:head>
 
-<BgGridEffect />
+{#if gridEffect}
+	<BgGridEffect />
+{/if}
 
 <section class="sm:pt-30 relative flex min-h-screen p-7 pt-20 md:pt-40">
 	<div class="mx-auto sm:w-3/4 lg:w-1/2">

@@ -8,7 +8,7 @@
 	<title>Blog | Lucas Ng</title>
 </svelte:head>
 
-<BasicSection title="My blog">
+<BasicSection title="My blog" gridEffect={true}>
 	<ul class="space-y-4 pt-5 sm:space-y-8 sm:pt-10">
 		{#each data.posts as post}
 			<li class="rounded-2xl transition-transform hover:scale-[1.02]">

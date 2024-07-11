@@ -10,8 +10,8 @@
 
 <BgGridEffect />
 
-<section class="relative flex h-screen">
-	<div class="m-auto rounded-2xl px-10 !pb-0 pt-5 sm:pt-14">
+<div class="z-20 m-auto">
+	<div class="rounded-2xl px-10 !pb-0 pt-5 sm:pt-14">
 		<div class="group sm:flex sm:flex-row-reverse">
 			<img src={peepEyesClosed} class="w-1/2 group-has-[:hover]:hidden" alt="A cartoon of Lucas" />
 			<img
@@ -48,4 +48,4 @@
 			</div>
 		</div>
 	</div>
-</section>
+</div>
