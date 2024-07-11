@@ -13,7 +13,7 @@
 	<BgGridEffect />
 {/if}
 
-<section class="sm:pt-30 relative flex min-h-screen p-7 pt-20 md:pt-40">
+<section class="sm:pt-30 relative flex w-screen p-7 pt-20 md:pt-40">
 	<div class="mx-auto sm:w-3/4 lg:w-1/2">
 		<div class="pb-8 pt-12 text-left">
 			<h1

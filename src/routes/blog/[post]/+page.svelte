@@ -17,7 +17,7 @@
 	<meta name="twitter:description" content={subtitle} />
 </svelte:head>
 
-<section class="relative flex min-h-screen p-7 pt-40">
+<section class="relative flex w-screen p-7 pt-40">
 	<div class="mx-auto space-y-12 sm:w-3/4 lg:w-1/2">
 		<div class="text-left">
 			<h1 class="font-sans text-3xl font-bold sm:text-4xl">
