@@ -1,0 +1,1 @@
+import{a as e,t as p}from"./disclose-version.EaiUMsAl.js";var s=p("<p>tbc</p>");const r={title:"Physarum",subtitle:"Infinitely-tiled WebGL simulation of Physarum polycephalum",date:"2022",tags:["TS","WebGL","Shaders"],href:"https://github.com/apple-phi/physarum"};function i(t){var a=s();e(t,a)}export{i as default,r as metadata};
