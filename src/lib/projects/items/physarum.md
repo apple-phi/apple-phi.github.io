@@ -5,7 +5,7 @@ date: "2022"
 tags:
   - TS
   - WebGL
-  - Shaders
+  - shaders
 href: https://github.com/apple-phi/physarum
 ---
 

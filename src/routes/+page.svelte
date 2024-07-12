@@ -29,7 +29,7 @@
 				</div>
 				<div class="sm:text-md space-y-4 rounded-xl text-sm md:text-lg">
 					<p
-						class="w-fit max-w-80 rounded-md bg-stone-50 px-2 !leading-relaxed md:max-w-96 lg:max-w-[28rem]"
+						class="w-fit max-w-80 rounded-md bg-stone-50 !leading-relaxed md:max-w-96 lg:max-w-[28rem]"
 					>
 						I'm a student of Information and Computer Engineering at the University of Cambridge. I
 						love technology, interior design, and being outdoors.

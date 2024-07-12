@@ -5,7 +5,7 @@ date: "2023"
 tags:
   - C++
   - OpenGL
-  - Shaders
+  - shaders
 href: https://github.com/apple-phi/lander2
 ---
 

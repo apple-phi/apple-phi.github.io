@@ -1,5 +1,4 @@
 <script lang="ts">
-	import BgGridEffect from '$lib/components/BgGridEffect.svelte';
 	import { calendarIcon, labelIcon } from '$lib/svg';
 
 	export let data;
