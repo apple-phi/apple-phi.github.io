@@ -1,1 +1,0 @@
-import{a,t as e}from"./disclose-version.B6s1Vk_w.js";var o=e("<p>tbc</p>");const p={title:"Mirror Mirror",subtitle:"Winning team entry for PyWeek 33",date:"2022",tags:["Python","game jam"],href:"https://github.com/apple-phi/Mirror-Mirror"};function m(r){var t=o();a(r,t)}export{m as default,p as metadata};
