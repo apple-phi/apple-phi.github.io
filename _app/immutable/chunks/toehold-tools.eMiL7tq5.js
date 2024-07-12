@@ -1,1 +1,0 @@
-import{a,t as e}from"./disclose-version.EaiUMsAl.js";var l=e("<p>tbc</p>");const r={title:"ToeholdTools",subtitle:"Scalable, optimized Python framework for analyzing RNA riboregulators en masse",date:"2021",tags:["Python / Cython","JS + HTML","CI/CD","20000 LOC"],href:"https://github.com/apple-phi/thtools"};function s(t){var o=l();a(t,o)}export{s as default,r as metadata};
