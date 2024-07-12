@@ -2,6 +2,7 @@
 	import { peepEyesClosed, peepEyesOpen } from '$lib/svg';
 	import { socialLinks } from '$lib/config';
 	import BgGridEffect from '$lib/components/BgGridEffect.svelte';
+	import SocialIcon from '$lib/components/socialIcon.svelte';
 </script>
 
 <svelte:head>
@@ -40,9 +41,7 @@
 				</div>
 				<div class="flex gap-3">
 					{#each socialLinks as { name, href, icon }}
-						<a {href} target="_blank" rel="noopener noreferrer">
-							<img src={icon} class="inline-block h-6 w-6" alt="{name} icon" />
-						</a>
+						<SocialIcon {name} {href} {icon} />
 					{/each}
 				</div>
 			</div>
