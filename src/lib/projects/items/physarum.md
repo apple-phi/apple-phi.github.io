@@ -3,7 +3,7 @@ title: Physarum
 subtitle: Infinitely-tiled WebGL simulation of the slime mould Physarum polycephalum
 date: "2022"
 tags:
-  - TS
+  - JS/TS
   - WebGL
   - shaders
   - 500 LOC

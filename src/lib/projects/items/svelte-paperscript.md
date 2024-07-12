@@ -1,6 +1,6 @@
 ---
 title: svelte-paperscript
-subtitle: Write PaperScript code directly in your Svelte components
+subtitle: A preprocessor to write PaperScript code directly in your Svelte components
 date: "2024"
 tags:
   - Svelte

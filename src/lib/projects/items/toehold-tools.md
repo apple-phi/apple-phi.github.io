@@ -5,8 +5,7 @@ date: "2021"
 tags:
   - Python
   - Cython
-  - JS
-  - HTML
+  - JS/TS
   - CI/CD
   - 20k LOC
 href: https://github.com/apple-phi/thtools

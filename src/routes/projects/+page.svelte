@@ -4,8 +4,8 @@
 	let { data } = $props();
 	import type { ProjectItemMetadata } from '$lib/projects';
 	import BasicSection from '$lib/components/BasicSection.svelte';
+	import linkIcon from '$lib/svg/link-iconoir.svg';
 
-	// Use array so Svelte 5 can make it "deeply reactive"
 	let selectedTags = $state([] as string[]);
 
 	function displayProject(project: ProjectItemMetadata) {
@@ -24,36 +24,44 @@
 </script>
 
 <BasicSection title="Past projects">
-	<h2 class="py-4">Go ahead and select a tag to filter the list!</h2>
+	<h2 class="py-4">Select a tag to filter the list!</h2>
 	<ul class="w-auto pt-5 sm:pt-10">
 		{#each data.items as project (project.slug)}
 			<Collapsible.Root open={displayProject(project)}>
 				<Collapsible.Content transition={fade}>
-					<li class="rounded-2xl py-4">
-						<article class="flex items-baseline">
-							<div class="hidden w-12 flex-none pr-16 text-right text-gray-500 sm:block md:w-24">
-								{@html project.date}
+					<li class="group rounded-2xl py-4">
+						<article class="flex items-baseline group-hover:items-center">
+							<div
+								class="relative hidden w-12 flex-none pr-16 text-right text-gray-500 sm:block md:w-24"
+							>
+								<span class="group-hover:hidden">{@html project.date}</span>
+								<a href="/projects/{project.slug}" class="hidden group-hover:inline-block">
+									<img src={linkIcon} alt="Link Icon" class="h-6 w-6" />
+								</a>
 							</div>
 							<div class="flex-grow">
-								<div class="items-center gap-4 lg:flex">
-									<div class="flex items-baseline">
-										<a href="/projects/{project.slug}">
+								<div class="w-full items-center gap-4 lg:flex">
+									<a href="/projects/{project.slug}">
+										<div class="flex items-baseline">
 											<h2
-												class="whitespace-nowrap bg-stone-50 py-1 text-2xl font-semibold text-orange-600 hover:underline"
+												class="whitespace-nowrap bg-stone-50 py-1 text-2xl font-semibold text-orange-600 group-hover:underline"
 											>
 												{project.title}
 											</h2>
-										</a>
-										<p class="pl-4 text-gray-500 sm:hidden">
-											{@html project.date}
-										</p>
-									</div>
+											<p class="pl-4 text-gray-500 sm:hidden">
+												{@html project.date}
+											</p>
+										</div>
+									</a>
 
 									{#if project.tags?.length > 0}
 										<div class="flex flex-wrap gap-2">
 											{#each project.tags as tag}
 												<button
-													onclick={() => toggleTag(tag)}
+													onclick={(e) => {
+														e.stopPropagation();
+														toggleTag(tag);
+													}}
 													class="inline-block rounded-full px-2 py-1 text-xs transition-transform hover:scale-110 {selectedTags.includes(
 														tag
 													)
@@ -65,10 +73,16 @@
 											{/each}
 										</div>
 									{/if}
+									<!-- Make the empty space clickable also (bit hacky) -->
+									<div class="h-full grow">
+										<a href="/projects/{project.slug}"><div class="size-full">&nbsp;</div></a>
+									</div>
 								</div>
-								<h3 class="text-md mt-3 text-pretty bg-stone-50 !leading-relaxed text-gray-700">
-									{@html project.subtitle}
-								</h3>
+								<a href="/projects/{project.slug}">
+									<h3 class="text-md text-pretty bg-stone-50 pt-3 !leading-relaxed text-gray-700">
+										{@html project.subtitle}
+									</h3>
+								</a>
 							</div>
 						</article>
 					</li>
