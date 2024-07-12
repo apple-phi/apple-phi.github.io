@@ -33,7 +33,7 @@ export const socialLinks = [
 	},
 	{
 		name: 'LinkedIn',
-		href: 'https://www.linkedin.com/in/lucas-ng-/',
+		href: 'https://www.linkedin.com/in/lucas-ng123/',
 		icon: linkedinIcon
 	},
 	{
