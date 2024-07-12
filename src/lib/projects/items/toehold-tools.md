@@ -8,7 +8,7 @@ tags:
   - JS
   - HTML
   - CI/CD
-  - 20000 LOC
+  - 20k LOC
 href: https://github.com/apple-phi/thtools
 ---
 

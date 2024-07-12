@@ -14,6 +14,7 @@
 	}
 
 	function toggleTag(tag: string) {
+		document.querySelector('body')?.scrollIntoView({ behavior: 'smooth' });
 		if (selectedTags.includes(tag)) {
 			selectedTags = selectedTags.filter((t) => t !== tag);
 		} else {
@@ -23,26 +24,27 @@
 </script>
 
 <BasicSection title="Past projects">
-	<ul class="space-y-4 pt-5 sm:space-y-8 sm:pt-10">
+	<h2 class="py-4">Go ahead and select a tag to filter the list!</h2>
+	<ul class="w-auto pt-5 sm:pt-10">
 		{#each data.items as project (project.slug)}
 			<Collapsible.Root open={displayProject(project)}>
 				<Collapsible.Content transition={fade}>
-					<li class="rounded-2xl">
+					<li class="rounded-2xl py-4">
 						<article class="flex items-baseline">
-							<div class="w-24 flex-none pr-16 text-right text-gray-500">
+							<div class="w-12 flex-none pr-16 text-right text-gray-500 md:w-24">
 								{@html project.date}
 							</div>
 							<div class="flex-grow">
-								<div class="flex items-center">
+								<div class="items-center gap-4 lg:flex">
 									<a href="/projects/{project.slug}">
 										<h2
-											class="inline-block text-pretty bg-stone-50 text-2xl font-semibold text-orange-600 hover:underline"
+											class="whitespace-nowrap bg-stone-50 py-1 text-2xl font-semibold text-orange-600 hover:underline"
 										>
-											{@html project.title}
+											{project.title}
 										</h2>
 									</a>
 									{#if project.tags?.length > 0}
-										<div class="ml-4 inline-flex flex-wrap gap-2">
+										<div class="flex flex-wrap gap-2">
 											{#each project.tags as tag}
 												<button
 													onclick={() => toggleTag(tag)}
@@ -58,7 +60,7 @@
 										</div>
 									{/if}
 								</div>
-								<h3 class="text-md mt-2 text-pretty bg-stone-50 !leading-relaxed text-gray-700">
+								<h3 class="text-md mt-3 text-pretty bg-stone-50 !leading-relaxed text-gray-700">
 									{@html project.subtitle}
 								</h3>
 							</div>
