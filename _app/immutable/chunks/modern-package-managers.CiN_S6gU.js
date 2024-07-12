@@ -1,1 +1,0 @@
-import{a as e,t as o}from"./disclose-version.AgLoxjy1.js";var n=o("<p>In progress…</p>");const r={title:"Pixies, foxes and keyboard-mashing",subtitle:"What modern package management gets wrong about tooling",date:"2024-07-08",updated:"2024-07-08",tags:["opinion","tooling"]};function s(a){var t=n();e(a,t)}export{s as default,r as metadata};

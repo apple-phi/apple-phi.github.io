@@ -1,0 +1,1 @@
+import{a as e,t as o}from"./disclose-version.DNvZvYDK.js";var r=o("<p>tbc</p>");const p={title:"CUED Mars Lander competition",subtitle:"Physically-accurate simulation of autonomous Mars lander under PID-control",date:"2023",tags:["C++","OpenGL","shaders","2k LOC"],href:"https://github.com/apple-phi/lander2"};function s(a){var t=r();e(a,t)}export{s as default,p as metadata};

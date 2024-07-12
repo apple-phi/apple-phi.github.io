@@ -1,0 +1,1 @@
+import{a as p,t as a}from"./disclose-version.DNvZvYDK.js";var r=a("<p>tbc</p>");const s={title:"svelte-paperscript",subtitle:"Write PaperScript code directly in your Svelte components",date:"2024",tags:["Svelte","500 LOC"],href:"https://github.com/apple-phi/svelte-paperscript"};function o(t){var e=r();p(t,e)}export{o as default,s as metadata};
