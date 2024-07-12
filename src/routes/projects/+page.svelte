@@ -31,18 +31,24 @@
 				<Collapsible.Content transition={fade}>
 					<li class="rounded-2xl py-4">
 						<article class="flex items-baseline">
-							<div class="w-12 flex-none pr-16 text-right text-gray-500 md:w-24">
+							<div class="hidden w-12 flex-none pr-16 text-right text-gray-500 sm:block md:w-24">
 								{@html project.date}
 							</div>
 							<div class="flex-grow">
 								<div class="items-center gap-4 lg:flex">
-									<a href="/projects/{project.slug}">
-										<h2
-											class="whitespace-nowrap bg-stone-50 py-1 text-2xl font-semibold text-orange-600 hover:underline"
-										>
-											{project.title}
-										</h2>
-									</a>
+									<div class="flex items-baseline">
+										<a href="/projects/{project.slug}">
+											<h2
+												class="whitespace-nowrap bg-stone-50 py-1 text-2xl font-semibold text-orange-600 hover:underline"
+											>
+												{project.title}
+											</h2>
+										</a>
+										<p class="pl-4 text-gray-500 sm:hidden">
+											{@html project.date}
+										</p>
+									</div>
+
 									{#if project.tags?.length > 0}
 										<div class="flex flex-wrap gap-2">
 											{#each project.tags as tag}
