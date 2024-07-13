@@ -7,6 +7,19 @@
 	import linkIcon from '$lib/svg/link-iconoir.svg';
 
 	let selectedTags = $state([] as string[]);
+	data.url.searchParams.getAll('tag').map((tag) => selectedTags.push(decodeURIComponent(tag)));
+
+	// When the selectedTags change, set the URL search params
+	$effect(() => {
+		const searchParams = new URLSearchParams();
+		selectedTags.forEach((tag) => searchParams.append('tag', tag));
+        // SvelteKit doesn't yet support the Svelte 5 version of `replaceState` so we have to use the `history` object directly
+		history.replaceState(
+			null,
+			'',
+			`${location.pathname}${selectedTags.length > 0 ? '?' : ''}${searchParams}`
+		);
+	});
 
 	function displayProject(project: ProjectItemMetadata) {
 		if (!selectedTags.length) return true;
@@ -14,7 +27,11 @@
 	}
 
 	function toggleTag(tag: string) {
-		document.querySelector('body')?.scrollIntoView({ behavior: 'smooth' });
+		try {
+			document.querySelector('body')?.scrollIntoView({ behavior: 'smooth' });
+		} catch (e) {
+			console.error(e);
+		}
 		if (selectedTags.includes(tag)) {
 			selectedTags = selectedTags.filter((t) => t !== tag);
 		} else {
@@ -24,7 +41,15 @@
 </script>
 
 <BasicSection title="Past projects">
-	<h2 class="py-4">Select a tag to filter the list!</h2>
+	<h2 class="py-4">
+		{#if selectedTags.length == 0}
+			Select a tag to filter the list!
+		{:else if selectedTags.length == 1}
+			You have selected 1 tag.
+		{:else}
+			You have selected {selectedTags.length} tags.
+		{/if}
+	</h2>
 	<ul class="w-auto pt-5 sm:pt-10">
 		{#each data.items as project (project.slug)}
 			<Collapsible.Root open={displayProject(project)}>
@@ -34,7 +59,7 @@
 							<div
 								class="relative hidden w-12 flex-none pr-16 text-right text-gray-500 sm:block md:w-24"
 							>
-								<span class="group-hover:hidden">{@html project.date}</span>
+								<span class="group-hover:hidden">{new Date(project.date).getFullYear()}</span>
 								<a href="/projects/{project.slug}" class="hidden group-hover:inline-block">
 									<img src={linkIcon} alt="Link Icon" class="h-6 w-6" />
 								</a>
@@ -49,7 +74,7 @@
 												{project.title}
 											</h2>
 											<p class="pl-4 text-gray-500 sm:hidden">
-												{@html project.date}
+												{new Date(project.date).getFullYear()}
 											</p>
 										</div>
 									</a>
@@ -66,7 +91,7 @@
 														tag
 													)
 														? 'border-2 border-orange-500 font-bold text-orange-600'
-														: 'border border-gray-300 text-gray-500'}"
+														: 'border border-gray-400 text-gray-500'}"
 												>
 													{tag}
 												</button>

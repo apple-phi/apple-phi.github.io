@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { calendarIcon, labelIcon } from '$lib/svg';
-
 	export let data;
 
 	const { title, subtitle, date, tags } = data.meta;
@@ -21,26 +19,27 @@
 	<div class="mx-auto space-y-12 sm:w-3/4 lg:w-1/2">
 		<div class="text-left">
 			<h1 class="font-sans text-3xl font-bold sm:text-4xl">
-				{title}
+				{@html title}
 			</h1>
 			<h2 class="mt-2 inline-block bg-stone-50 text-lg !leading-relaxed text-gray-500">
-				{subtitle}
+				{@html subtitle}
 			</h2>
-			<div class="mt-6 flex gap-6">
-				{#if date}
-					<div class="flex items-center">
-						<img src={calendarIcon} class="inline-block h-6 w-6" alt="Calendar icon" />
-						<p class="ml-1 text-xs text-gray-500">{date}</p>
-					</div>
-				{/if}
-				{#if tags?.length > 0}
-					<div class="flex items-center">
-						<img src={labelIcon} class="inline-block h-6 w-6" alt="Label icon" />
-						<p class="ml-1 text-xs text-gray-500">{tags.join(', ')}</p>
-					</div>
-				{/if}
-			</div>
+			{#if tags?.length > 0}
+				<div class="mt-4 flex flex-wrap gap-2">
+					{#each tags as tag}
+						<a
+							href="/projects?tag={encodeURIComponent(tag)}"
+							class="inline-block rounded-full border border-gray-400 px-2 py-1 text-sm
+														text-gray-500 transition-transform hover:scale-110"
+						>
+							{tag}
+						</a>
+					{/each}
+				</div>
+			{/if}
 		</div>
-		<ProjectContent />
+		<div class="sm:prose-md prose prose-sm min-w-full max-w-none pb-20 text-justify md:prose-lg">
+			<ProjectContent />
+		</div>
 	</div>
 </section>

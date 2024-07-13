@@ -1,6 +1,6 @@
 ---
 title: ToeholdTools
-subtitle: Scalable, optimized Python framework for analyzing RNA riboregulators <span class="italic">en masse</span>
+subtitle: Scalable, optimized Python framework for analyzing RNA riboregulators <span style="font-style:italic">en masse</span>
 date: "2021"
 tags:
   - Python
@@ -11,4 +11,4 @@ tags:
 href: https://github.com/apple-phi/thtools
 ---
 
-tbc
+See the Github repo [here](https://github.com/apple-phi/thtools).

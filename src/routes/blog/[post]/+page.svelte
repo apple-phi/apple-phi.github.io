@@ -41,6 +41,8 @@
 				{/if}
 			</div>
 		</div>
-		<PostContent />
+		<div class="prose prose-md sm:prose:xl md:prose-2xl">
+			<PostContent />
+		</div>
 	</div>
 </section>

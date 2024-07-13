@@ -8,5 +8,5 @@ export const load = async ({ url, fetch }) => {
 	const res = await fetch(`${url.origin}/projects/items.json`);
 	const items: (ProjectItemMetadata & { slug?: string })[] = await res.json();
 
-	return { items };
+	return { url, items };
 };

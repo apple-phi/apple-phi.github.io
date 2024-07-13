@@ -1,5 +1,6 @@
 import adapter from '@sveltejs/adapter-static';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
+import { paperscriptPreprocess } from 'svelte-paperscript';
 import { mdsvex } from 'mdsvex';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 import rehypeSlug from 'rehype-slug';
@@ -12,11 +13,13 @@ const config = {
 	// Consult https://kit.svelte.dev/docs/integrations#preprocessors
 	// for more information about preprocessors
 	preprocess: [
+		...paperscriptPreprocess({ sourceMap: true }),
 		mdsvex({
 			// The default mdsvex extension is .svx
 			extensions: ['.md'],
 			// Adds IDs to headings, and anchor links to those IDs. Note: must stay in this order to work.
-			rehypePlugins: [rehypeSlug, rehypeAutolinkHeadings]
+			rehypePlugins: [rehypeSlug, rehypeAutolinkHeadings],
+			smartypants: { dashes: 'oldschool' }
 		}),
 		vitePreprocess()
 	],
