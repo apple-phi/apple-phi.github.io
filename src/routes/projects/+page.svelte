@@ -5,15 +5,19 @@
 	import type { ProjectItemMetadata } from '$lib/projects';
 	import BasicSection from '$lib/components/BasicSection.svelte';
 	import linkIcon from '$lib/svg/link-iconoir.svg';
+	import { onMount } from 'svelte';
 
 	let selectedTags = $state([] as string[]);
-	data.url.searchParams.getAll('tag').map((tag) => selectedTags.push(decodeURIComponent(tag)));
+	onMount(() => {
+		// Search params are not allowed to be pre-rendered in SvelteKit
+		data.url.searchParams.getAll('tag').map((tag) => selectedTags.push(decodeURIComponent(tag)));
+	});
 
 	// When the selectedTags change, set the URL search params
 	$effect(() => {
 		const searchParams = new URLSearchParams();
 		selectedTags.forEach((tag) => searchParams.append('tag', tag));
-        // SvelteKit doesn't yet support the Svelte 5 version of `replaceState` so we have to use the `history` object directly
+		// SvelteKit doesn't yet support the Svelte 5 version of `replaceState` so we have to use the `history` object directly
 		history.replaceState(
 			null,
 			'',
