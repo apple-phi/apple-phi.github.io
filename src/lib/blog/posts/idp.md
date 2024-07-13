@@ -1,6 +1,6 @@
 ---
-title: IDP
-subtitle: An autonomous robot which achieved the only 100% score in the competition
+title: Autonomous robotics from scratch
+subtitle: If control systems have no fans, that means I'm dead
 date: "2024"
 tags:
   - C++

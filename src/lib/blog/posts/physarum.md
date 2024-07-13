@@ -1,6 +1,6 @@
 ---
-title: Physarum
-subtitle: Infinitely-tiled WebGL simulation of a slime mould
+title: Slime moulds
+subtitle: The one where wiggly things wiggle
 date: "2022"
 tags:
   - JS/TS

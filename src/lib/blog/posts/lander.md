@@ -1,6 +1,6 @@
 ---
-title: CUED Mars Lander competition
-subtitle: Physically-accurate rendering of Martian terrain
+title: Rendering Martian terrain
+subtitle: Throwing shade at shaders
 date: "2023"
 tags:
   - C++

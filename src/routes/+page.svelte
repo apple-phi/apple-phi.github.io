@@ -2,7 +2,7 @@
 	import { peepEyesClosed, peepEyesOpen } from '$lib/svg';
 	import { socialLinks } from '$lib/config';
 	import BgGridEffect from '$lib/components/BgGridEffect.svelte';
-	import SocialIcon from '$lib/components/socialIcon.svelte';
+	import SocialIcon from '$lib/components/SocialIcon.svelte';
 </script>
 
 <svelte:head>

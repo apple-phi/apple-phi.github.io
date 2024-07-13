@@ -3,8 +3,9 @@ import githubIcon from './github-iconoir.svg';
 import linkedinIcon from './linkedin-iconoir.svg';
 import labelIcon from './label-iconoir.svg';
 import mailIcon from './sendmail-iconoir.svg';
+import linkIcon from './link-iconoir.svg';
 
-export { calendarIcon, githubIcon, linkedinIcon, labelIcon, mailIcon };
+export { calendarIcon, githubIcon, linkedinIcon, labelIcon, mailIcon, linkIcon };
 
 import peepEyesClosed from './peep-eyes-closed.svg';
 import peepEyesOpen from './peep-eyes-open.svg';

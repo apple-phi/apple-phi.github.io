@@ -5,7 +5,7 @@
 
 <main class="flex min-h-screen flex-col justify-between bg-stone-50">
 	<section class="fixed top-0 z-20 w-screen">
-		<nav class="flex w-screen items-stretch bg-stone-50 px-5 py-6 sm:px-8 md:bg-opacity-0">
+		<nav class="flex w-screen items-stretch bg-stone-50 px-5 py-6 sm:px-8">
 			<div class="whitespace-nowrap">
 				<a href="/"><h1 class="text-md font-display text-orange-700">Lucas Ng</h1></a>
 			</div>

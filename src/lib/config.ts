@@ -8,10 +8,6 @@ export const navItems = [
 	{
 		title: 'Blog',
 		href: '/blog'
-	},
-	{
-		title: 'Projects',
-		href: '/projects'
 	}
 	// {
 	// 	title: 'About',
@@ -42,5 +38,3 @@ export const socialLinks = [
 		icon: mailIcon
 	}
 ];
-
-export const pastProjects = [];

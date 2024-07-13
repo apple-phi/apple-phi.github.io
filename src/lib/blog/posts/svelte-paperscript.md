@@ -1,6 +1,6 @@
 ---
 title: svelte-paperscript
-subtitle: A preprocessor to write PaperScript code directly in your Svelte components
+subtitle: 99% of linters hate this one weird trick
 date: "2024"
 tags:
   - Svelte

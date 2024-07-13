@@ -1,6 +1,6 @@
 ---
-title: ToeholdTools
-subtitle: Scalable, optimized Python framework for analyzing RNA riboregulators <span style="font-style:italic">en masse</span>
+title: Optimizing RNA simulations
+subtitle: Or, how I spent a year slowly going mad
 date: "2021"
 tags:
   - Python
