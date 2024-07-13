@@ -6,7 +6,7 @@
 	import { Accordion, Collapsible } from 'bits-ui';
 
 	import type { BlogPostMetadata } from '$lib/blog';
-	import { linkIcon, labelIcon } from '$lib/svg';
+	import { linkIcon, labelIcon, xmarkIcon } from '$lib/svg';
 	import BasicSection from '$lib/components/BasicSection.svelte';
 
 	let selectedTags = $state([] as string[]);
@@ -65,7 +65,7 @@
 			You have selected {selectedTags.length} tags.
 		{/if}
 	</h2>
-	<div class="flex flex-wrap gap-2">
+	<div class="flex flex-wrap items-center gap-2">
 		{#each data.tags as tag}
 			<button
 				onclick={(e) => {
@@ -81,8 +81,22 @@
 				{tag}
 			</button>
 		{/each}
+		<!-- FIX: X-mark isn't vertically centered -->
+		<Collapsible.Root
+			open={selectedTags.length > 0}
+			onOpenChange={() => {
+				if (selectedTags.length > 0) selectedTags = [];
+			}}
+			class="flex"
+		>
+			<Collapsible.Content transition={fade} class="m-auto">
+				<Collapsible.Trigger class="inline-block transition-transform hover:scale-110">
+					<img src={xmarkIcon} class="size-6 opacity-50" alt="X mark icon" />
+				</Collapsible.Trigger>
+			</Collapsible.Content>
+		</Collapsible.Root>
 	</div>
-	<Accordion.Root value={selectedPostSlugs} class="pt-5 sm:pt-10">
+	<Accordion.Root value={selectedPostSlugs}>
 		{#each data.posts as post}
 			<Accordion.Item value={post.slug}>
 				<Accordion.Content transition={fade}>

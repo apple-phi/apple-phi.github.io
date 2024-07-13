@@ -15,12 +15,12 @@ export async function fetchItems<T extends MinMetadata>({
 }: {
 	files: ReturnType<ImportGlobFunction>;
 	tag?: string;
-}): Promise<Awaited<T & { slug?: string }>[]> {
+}): Promise<Awaited<T & { slug: string }>[]> {
 	const items = await Promise.all(
 		Object.entries(files).map(async ([path, resolver]) => {
 			// @ts-ignore
 			const { metadata } = (await resolver()) as { metadata: T; default: Component };
-			const slug = path.split('/').pop()?.slice(0, -3);
+			const slug = path.split('/').pop()?.slice(0, -3) || 'NO_SLUG';
 			return { ...metadata, slug };
 		})
 	);

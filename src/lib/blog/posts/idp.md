@@ -2,6 +2,7 @@
 title: Autonomous robotics from scratch
 subtitle: If control systems have no fans, that means I'm dead
 date: "2024"
+hidden: true
 tags:
   - C++
   - Arduino
