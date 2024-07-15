@@ -2,7 +2,7 @@
 title: Optimizing RNA simulations
 subtitle: Or, how I spent a year slowly going mad
 date: "2021"
-hidden: true
+hidden: false
 tags:
   - Python
   - Cython

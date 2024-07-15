@@ -38,7 +38,9 @@
 				</div>
 			{/if}
 		</div>
-		<div class="sm:prose-md prose prose-sm min-w-full max-w-none pb-20 text-justify md:prose-lg">
+		<div
+			class="sm:prose-md prose prose-sm min-w-full text-pretty pb-20 text-justify md:prose-lg sm:max-w-screen-sm"
+		>
 			<PostContent />
 		</div>
 	</div>

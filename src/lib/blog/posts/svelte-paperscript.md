@@ -16,29 +16,36 @@ href: https://github.com/apple-phi/svelte-paperscript
 Ever wanted the ability to write [PaperScript](http://paperjs.org/) code directly in your Svelte components? No?
 Well, too bad. You can do it anyway.
 
-It makes linters very angry.
+It makes linters (and other static analysis tools) very angry.
 
-I wrote a Svelte preprocessor to automatically compile your PaperScript code into JavaScript, so you can use it in your Svelte components. Unlike regular Paper.js, this has the added benefit of skipping the compilation step on the client side, so your app will load faster.
+I wrote a Svelte preprocessor to automatically compile your PaperScript code into JavaScript, so you can use it in your Svelte components. This contrasts with the usual Paper.js way of doing it all on the client side. This way, Vite can optimise everything at build time with tree-shaking!
+
+Much faster. Much better.
 
 Here's a simple demo:
 
 <SimpleExample />
 
+<div class="text-balance">
+
 ```svelte
 <script lang="​paperscript">
-    const rectangle = new Path.Rectangle({
+    const rect = new Path.Rectangle({
         size: view.size / 5,
         point: view.center,
         fillColor: 'orange'
     });
     function onFrame() {
-        rectangle.rotate(5, (view.center + rectangle.bounds.center) / 2);
+        rect.rotate(5, (
+            view.center + rect.bounds.center
+        ) / 2);
     }
 </script>
 
 <canvas class="h-1/2 w-full" resize></canvas>
-
 ```
+
+</div>
 
 Wiggle your mouse below to see something more complex:
 

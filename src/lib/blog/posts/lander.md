@@ -2,6 +2,7 @@
 title: Rendering Martian terrain
 subtitle: Throwing shade at shaders
 date: "2023"
+hidden: true
 tags:
   - C++
   - OpenGL

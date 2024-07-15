@@ -56,7 +56,7 @@
 </svelte:head>
 
 <BasicSection title="My blog">
-	<h2 class="py-4">
+	<!-- <h2 class="py-4">
 		{#if selectedTags.length == 0}
 			Select a tag to filter the list!
 		{:else if selectedTags.length == 1}
@@ -64,8 +64,8 @@
 		{:else}
 			You have selected {selectedTags.length} tags.
 		{/if}
-	</h2>
-	<div class="flex flex-wrap items-center gap-2">
+	</h2> -->
+	<div class="flex flex-wrap items-center gap-2 pt-12">
 		{#each data.tags as tag}
 			<button
 				onclick={(e) => {
@@ -82,19 +82,22 @@
 			</button>
 		{/each}
 		<!-- FIX: X-mark isn't vertically centered -->
-		<Collapsible.Root
-			open={selectedTags.length > 0}
-			onOpenChange={() => {
-				if (selectedTags.length > 0) selectedTags = [];
-			}}
-			class="flex"
-		>
-			<Collapsible.Content transition={fade} class="m-auto">
-				<Collapsible.Trigger class="inline-block transition-transform hover:scale-110">
-					<img src={xmarkIcon} class="size-6 opacity-50" alt="X mark icon" />
-				</Collapsible.Trigger>
-			</Collapsible.Content>
-		</Collapsible.Root>
+		<!-- <div class="h-full">
+			<Collapsible.Root
+				open={selectedTags.length > 0}
+				onOpenChange={() => {
+					if (selectedTags.length > 0) selectedTags = [];
+				}}
+			>
+				<Collapsible.Content transition={fade}>
+					<Collapsible.Trigger
+						class="!m-0 inline-grid size-full place-content-center !p-0 text-xs transition-transform hover:scale-110"
+					>
+						<img src={xmarkIcon} class="size-6 opacity-50" alt="X mark icon" />
+					</Collapsible.Trigger>
+				</Collapsible.Content>
+			</Collapsible.Root>
+		</div> -->
 	</div>
 	<Accordion.Root value={selectedPostSlugs}>
 		{#each data.posts as post}

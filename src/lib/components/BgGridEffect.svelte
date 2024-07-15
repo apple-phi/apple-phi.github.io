@@ -8,6 +8,8 @@
 			mouseX = e.clientX;
 			mouseY = e.clientY;
 		});
+		// Allow this effect to override the navbar's background opacity
+		document.querySelector('main > section > nav')?.classList.add('bg-opacity-0');
 	});
 </script>
 
