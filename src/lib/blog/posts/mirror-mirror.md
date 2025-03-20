@@ -1,6 +1,6 @@
 ---
 title: Game jams, COVID, and Brooklyn Nine-Nine
-subtitle: Crazy? I was crazy once.
+subtitle: What I did during isolation
 date: "March 2022"
 tags:
   - Python
@@ -14,8 +14,6 @@ href: https://github.com/apple-phi/Mirror-Mirror
 </script>
 
 <img src={TitleScreenImgSrc} width=100%/>
-
-They put me in a room.
 
 Afflicted by COVID-19---asymptomatic but for a sore throat---
 I suddenly found myself stuck in isolation until a lateral flow test dictated otherwise.

@@ -1,6 +1,6 @@
 ---
 title: Autonomous robotics from scratch
-subtitle: If control systems have no fans, that means I'm dead
+subtitle: Implementing robotic control systems
 date: "2024"
 hidden: false
 tags:

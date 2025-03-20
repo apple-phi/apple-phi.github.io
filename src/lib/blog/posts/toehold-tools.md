@@ -1,6 +1,6 @@
 ---
 title: Optimizing RNA simulations
-subtitle: Or, how I spent a year slowly going mad
+subtitle: Python can be fast too!
 date: "2021"
 hidden: false
 tags:
