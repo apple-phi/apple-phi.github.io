@@ -1,0 +1,88 @@
+---
+interface Props {
+  title: string
+  authors: string[]
+  venue: string
+  arxiv: string
+  projectPage?: string
+}
+
+const { title, authors, venue, arxiv, projectPage } = Astro.props
+---
+
+<article class="publication">
+  <h3>
+    <a class="publication-link" href={arxiv}>
+      {title}
+    </a>
+  </h3>
+  <p class="authors">
+    {authors.map((author, index) => (
+      <Fragment>
+        <span class="author">{author + (index < authors.length - 1 ? ',' : '')}</span>
+        {index < authors.length - 1 ? ' ' : ''}
+      </Fragment>
+    ))}
+  </p>
+  <p class="metadata">
+    <em class="venue">{venue}</em>
+    {projectPage && <a href={projectPage}>[project page]</a>}
+  </p>
+</article>
+
+<style>
+  .publication {
+    margin-bottom: 1.75rem;
+  }
+
+  .publication .publication-link {
+    color: var(--text-primary);
+    text-decoration: none;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .publication .publication-link:hover {
+      text-decoration: underline;
+      text-decoration-color: var(--text-primary);
+    }
+  }
+
+  .publication h3 {
+    margin: 0 0 0.25rem;
+    font-size: var(--font-size-m);
+    font-weight: var(--font-weight-bold);
+    line-height: 1.75;
+  }
+
+  .publication p {
+    margin: 0;
+    font-size: var(--font-size-s);
+    line-height: 1.75;
+  }
+
+  .publication .authors {
+    line-height: 1.5;
+  }
+
+  .publication .metadata {
+    margin-top: 0.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0 0.5rem;
+    color: var(--text-primary);
+  }
+
+  .publication .metadata > * {
+    font-size: inherit;
+  }
+
+  .publication .venue {
+    white-space: nowrap;
+  }
+
+  .publication .author {
+    font-size: inherit;
+    white-space: nowrap;
+  }
+</style>
