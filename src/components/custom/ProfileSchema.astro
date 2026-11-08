@@ -1,0 +1,21 @@
+---
+import { themeConfig } from '@/config'
+
+const { author, website, description } = themeConfig.site
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'ProfilePage',
+  url: website,
+  description,
+  mainEntity: {
+    '@type': 'Person',
+    name: author,
+    url: website,
+    sameAs: ['https://www.linkedin.com/in/lucas-ng123/', 'https://scholar.google.com/citations?user=YUVlBmsAAAAJ']
+  }
+}
+
+const serializedSchema = JSON.stringify(schema).replace(/</g, '\\u003c')
+---
+
+<script is:inline type="application/ld+json" set:html={serializedSchema} />

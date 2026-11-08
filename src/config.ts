@@ -6,7 +6,7 @@ export const themeConfig: ThemeConfig = {
     website: 'https://apple-phi.github.io/', // Site domain
     title: 'LUCAS NG', // Site title
     author: 'Lucas Ng', // Author name
-    description: 'Personal page of Lucas Ng.', // Site description
+    description: 'Lucas Ng: research, publications, and news.', // Site description
     language: 'en-US' // Default language
   },
 

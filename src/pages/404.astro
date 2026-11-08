@@ -1,13 +1,32 @@
 ---
 import { themeConfig } from '@/config'
 import IndexLayout from '@/layouts/IndexLayout.astro'
+import BackButton from '@/components/ui/BackButton.astro'
 ---
 
 <IndexLayout title={`404 - ${themeConfig.site.title}`} description="Not Found">
-  <style>
-    .error-container {
-      color: var(--text-secondary);
-    }
-  </style>
-  <p class="error-container">Page Not Found…</p>
+  <header slot="header">
+    <h1 id="error-title">404</h1>
+  </header>
+  <section class="error-container" aria-labelledby="error-title">
+    <p>Page Not Found.</p>
+    <BackButton />
+  </section>
 </IndexLayout>
+
+<style>
+  .error-container {
+    margin-top: 1.75rem;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: var(--font-size-m);
+    font-weight: var(--font-weight-bold);
+  }
+
+  p {
+    margin: 0 0 1.25rem;
+    color: var(--text-primary);
+  }
+</style>
