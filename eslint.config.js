@@ -28,6 +28,8 @@ export default [
   {
     ignores: [
       'dist/**',
+      'build/**',
+      '.quarto/**',
       '.output/**',
       'node_modules/**',
       '*.log',

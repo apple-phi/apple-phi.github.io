@@ -1,6 +1,12 @@
 # Build output
 dist/
 .output/
+build/
+.quarto/
+
+# Imported manuscript snapshots are maintained by the upstream TeX pipeline.
+papers/**/index.qmd
+papers/**/refs.bib
 
 # Dependencies
 node_modules/

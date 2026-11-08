@@ -1,0 +1,27 @@
+<header
+  id="title-block-header"
+  data-citation-key="$publication.key$"
+  data-citation-venue="$publication.venue$"
+  data-citation-year="$publication.year$"
+  data-citation-url="$publication.url$"
+  data-arxiv-url="$publication.arxiv$"
+  $if(publication.affiliation)$
+  data-affiliation-name="$publication.affiliation.name$"
+  data-affiliation-url="$publication.affiliation.url$"
+  $endif$
+>
+  <h1 class="manuscript-title">$title$</h1>
+  <!-- prettier-ignore -->
+  <p class="manuscript-authors">$for(by-author)$<span class="manuscript-author">$if(by-author.email)$<a href="mailto:$by-author.email$">$by-author.name.literal$</a>$else$$by-author.name.literal$$endif$<sup>$for(by-author.affiliations)$<a href="#affiliation-$it.id$">$it.number$</a>$sep$,$endfor$</sup></span>$sep$, $endfor$</p>
+  <div class="manuscript-affiliations">
+    $for(by-affiliation)$
+    <p id="affiliation-$by-affiliation.id$"><sup>$by-affiliation.number$</sup> <span class="manuscript-affiliation-name">$by-affiliation.name$</span></p>
+    $endfor$
+  </div>
+</header>
+$if(abstract)$
+<section class="manuscript-abstract" aria-labelledby="abstract-title">
+  <h2 id="abstract-title">Abstract</h2>
+  <div>$abstract$</div>
+</section>
+$endif$

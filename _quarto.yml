@@ -1,0 +1,25 @@
+project:
+  type: default
+  output-dir: build/quarto
+  render:
+    - papers/*/index.qmd
+
+brand: _brand.yml
+lang: en
+reference-section-title: References
+
+format:
+  html:
+    theme: none
+    minimal: true
+    document-css: false
+    template-partials:
+      - custom/manuscript/title-block.html
+    toc: false
+    number-sections: true
+    link-citations: true
+    html-math-method: katex
+    citations-hover: false
+    crossrefs-hover: false
+    footnotes-hover: false
+    link-external-newwindow: false

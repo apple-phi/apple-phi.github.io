@@ -1,0 +1,13 @@
+# Snapshot imported from neurips2026/build/quarto/.
+# Source repository HEAD: aa678a9e872be378ed512e49e0bff494a08a5762.
+# Refresh index.qmd, refs.bib, and figures/ together after rebuilding upstream.
+# Presentation is defined by custom/manuscript/ and the site's Astro layout.
+publication:
+  key: ng2026compatible
+  venue: The Fortieth Annual Conference on Neural Information Processing Systems
+  year: 2026
+  url: https://openreview.net/forum?id=jJsQucS0Fg
+  arxiv: https://arxiv.org/abs/2610.31981
+  affiliation:
+    name: Devotion AI Labs
+    url: https://devotionlabs.ai/

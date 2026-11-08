@@ -1,0 +1,204 @@
+<script>
+  import { delegate, type Instance } from 'tippy.js'
+  import 'tippy.js/dist/tippy.css'
+
+  let destroy: (() => void) | undefined
+
+  function bindPreviews() {
+    destroy?.()
+    destroy = undefined
+    const article = document.querySelector<HTMLElement>('article.manuscript')
+    if (!article) return
+
+    const events = new AbortController()
+    let active: Instance | undefined
+
+    function previewFor(reference: Element) {
+      const href = reference.getAttribute('href')
+      if (!href?.startsWith('#')) return
+      const target = document.getElementById(decodeURIComponent(href.slice(1)))
+      if (!target || !article!.contains(target)) return
+
+      const preview = document.createElement('div')
+      preview.className = 'manuscript manuscript-preview'
+      preview.tabIndex = 0
+      preview.setAttribute('aria-label', `Preview: ${reference.textContent?.trim()}`)
+      const cites = reference.closest<HTMLElement>('[data-cites]')?.dataset.cites
+      const sources =
+        cites && reference.getAttribute('role') === 'doc-biblioref'
+          ? cites
+              .split(/\s+/)
+              .map((key) => document.getElementById(`ref-${key}`))
+              .filter((node): node is HTMLElement => !!node)
+          : [target]
+
+      for (const source of sources) {
+        const clone = source.cloneNode(true) as HTMLElement
+        clone.removeAttribute('id')
+        for (const element of clone.querySelectorAll('[id], [aria-describedby], [aria-labelledby]')) {
+          element.removeAttribute('id')
+          element.removeAttribute('aria-describedby')
+          element.removeAttribute('aria-labelledby')
+        }
+        for (const element of clone.querySelectorAll('.footnote-back, .footnote-backref, script')) element.remove()
+        for (const image of clone.querySelectorAll('img')) image.loading = 'eager'
+        preview.append(clone)
+      }
+      return preview
+    }
+
+    // Delegation creates tooltip instances on first interaction. Neither the
+    // tooltip DOM nor cloned math/figures are created for every page reference.
+    const delegated = delegate(article, {
+      target: 'a.quarto-xref[href^="#"], a[role="doc-biblioref"][href^="#"], a[role="doc-noteref"][href^="#"]',
+      appendTo: () => document.body,
+      theme: 'manuscript',
+      trigger: 'mouseenter focus',
+      interactive: true,
+      interactiveBorder: 10,
+      delay: [150, 100],
+      duration: 0,
+      arrow: false,
+      maxWidth: 512,
+      placement: 'bottom-start',
+      popperOptions: {
+        strategy: 'fixed',
+        modifiers: [
+          { name: 'preventOverflow', options: { padding: 12, altAxis: true } },
+          { name: 'flip', options: { padding: 12 } }
+        ]
+      },
+      touch: false,
+      aria: { content: 'describedby', expanded: false },
+      onShow(instance) {
+        const preview = previewFor(instance.reference)
+        if (!preview) return false
+        if (active !== instance) active?.hide()
+        active = instance
+        instance.setContent(preview)
+      },
+      onMount(instance) {
+        for (const image of instance.popper.querySelectorAll('img')) {
+          void image
+            .decode()
+            .then(() => instance.popperInstance?.update())
+            .catch(() => {})
+        }
+      },
+      onHidden(instance) {
+        if (active === instance) active = undefined
+        instance.setContent('')
+      }
+    })
+
+    document.addEventListener(
+      'keydown',
+      (event) => {
+        if (!active?.state.isVisible) return
+        if (event.key === 'Escape') {
+          event.preventDefault()
+          const instance = active
+          if (instance.popper.contains(document.activeElement)) {
+            instance.disable()
+            ;(instance.reference as HTMLElement).focus({ preventScroll: true })
+            instance.enable()
+          }
+          instance.hide()
+        } else if (event.key === 'Tab' && !event.shiftKey && document.activeElement === active.reference) {
+          event.preventDefault()
+          active.popper.querySelector<HTMLElement>('.manuscript-preview')?.focus({ preventScroll: true })
+        }
+      },
+      { signal: events.signal }
+    )
+
+    document.addEventListener(
+      'focusin',
+      (event) => {
+        if (
+          active &&
+          event.target instanceof Node &&
+          !active.reference.contains(event.target) &&
+          !active.popper.contains(event.target)
+        )
+          active.hide()
+      },
+      { signal: events.signal }
+    )
+
+    article.addEventListener('click', () => active?.hide(), { signal: events.signal })
+    destroy = () => {
+      events.abort()
+      delegated.destroy()
+      active = undefined
+    }
+  }
+
+  document.addEventListener('astro:page-load', bindPreviews)
+  document.addEventListener('astro:before-swap', () => {
+    destroy?.()
+    destroy = undefined
+  })
+</script>
+
+<style is:global>
+  .tippy-box[data-theme~='manuscript'] {
+    width: min(32rem, calc(100vw - 2rem));
+    background: var(--bg);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+    box-shadow: 0 0.25rem 1.5rem rgb(0 0 0 / 12%);
+    font-family: var(--sans);
+    font-size: var(--font-size-m);
+    line-height: 1.75;
+    letter-spacing: var(--spacing-m);
+    text-align: left;
+  }
+
+  .tippy-box[data-theme~='manuscript'] > .tippy-content {
+    max-height: min(65vh, 40rem);
+    overflow: auto;
+    padding: 1rem;
+    overscroll-behavior: contain;
+  }
+
+  .manuscript-preview {
+    outline: none;
+
+    /* Preview content must render even when its source is offscreen. */
+    * {
+      content-visibility: visible !important;
+      contain-intrinsic-block-size: none;
+    }
+
+    > :first-child,
+    > :first-child > :first-child {
+      margin-top: 0;
+    }
+
+    > :last-child,
+    > :last-child > :last-child {
+      margin-bottom: 0;
+    }
+
+    p {
+      text-align: left;
+    }
+
+    figure {
+      margin: 0;
+    }
+
+    .footnotes,
+    .csl-entry,
+    figcaption {
+      font-size: var(--font-size-s);
+    }
+  }
+
+  @media print {
+    [data-tippy-root] {
+      display: none !important;
+    }
+  }
+</style>

@@ -1,6 +1,8 @@
 # Build output
 dist/
 .output/
+build/
+.quarto/
 
 # Generated types
 .astro/
@@ -25,3 +27,6 @@ pnpm-debug.log*
 .idea/
 
 *.tsbuildinfo
+
+/.quarto/
+**/*.quarto_ipynb

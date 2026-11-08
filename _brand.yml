@@ -1,0 +1,92 @@
+# yaml-language-server: $schema=https://posit-dev.github.io/brand-yml/schema/brand.schema.json
+# Shared brand reference; consumed by Quarto, while Astro retains its own styles.
+
+meta:
+  name: Lucas Ng
+  description: 'Lucas Ng: research, publications, and news.'
+  link:
+    home: https://apple-phi.github.io/
+    github: https://github.com/apple-phi
+    linkedin: https://www.linkedin.com/in/lucas-ng123/
+    scholar: https://scholar.google.com/citations?user=YUVlBmsAAAAJ
+    email: mailto:ln373@cantab.ac.uk
+
+# No logo asset: the site uses the name as a text wordmark.
+color:
+  palette:
+    white: '#ffffff'
+    charcoal: '#1c1c1c'
+    ink: 'rgba(0, 0, 0, 0.85)'
+    muted: 'rgba(0, 0, 0, 0.4)'
+    faint: 'rgba(0, 0, 0, 0.24)'
+    chalk: 'rgba(255, 255, 255, 0.9)'
+    muted-on-dark: 'rgba(255, 255, 255, 0.4)'
+    faint-on-dark: 'rgba(255, 255, 255, 0.24)'
+    highlight: '#f3ffc4'
+    highlight-on-dark: '#545b37'
+  background: white
+  foreground: ink
+  primary: ink
+  secondary: muted
+  tertiary: faint
+  light: white
+  dark: charcoal
+
+typography:
+  fonts:
+    - family: Inter
+      source: file
+      files:
+        # Variable asset, registered at the weights used by the core roles.
+        - path: public/fonts/Inter.woff2
+          weight: 400
+          style: normal
+        - path: public/fonts/Inter.woff2
+          weight: 500
+          style: normal
+    - family: Besley
+      source: file
+      files:
+        - path: public/fonts/Besley-Italic.woff2
+          style: italic
+          weight: 400
+    - family: SF Mono
+      source: system
+  base:
+    family: Inter
+    size: 15px
+    weight: 400
+    line-height: 1.75
+  headings:
+    family: Inter
+    weight: 500
+    color: foreground
+    line-height: 1.75
+  monospace:
+    family: SF Mono
+    size: 0.9em
+  link:
+    color: foreground
+    decoration: underline
+
+# Context-specific tokens, outside the standard typography roles.
+# These document Chiri's choices; other consumers must opt into them.
+defaults:
+  chiri:
+    wordmark: LUCAS NG
+    content-width: 35rem
+    heading-size: 15px
+    small-text-size: 13px
+    letter-spacing: -0.02em
+    font-feature-settings: '"ss03" 1'
+    emphasis:
+      family: Besley
+      style: italic
+      weight: 400
+    monospace-fallbacks: [SFMono-Regular, ui-monospace, monospace]
+    dark:
+      background: '#1c1c1c'
+      foreground: 'rgba(255, 255, 255, 0.9)'
+      primary: 'rgba(255, 255, 255, 0.9)'
+      secondary: 'rgba(255, 255, 255, 0.4)'
+      tertiary: 'rgba(255, 255, 255, 0.24)'

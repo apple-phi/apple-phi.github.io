@@ -1,0 +1,113 @@
+---
+interface Props {
+  bibtex: string
+  arxiv: string
+}
+const { bibtex, arxiv } = Astro.props
+---
+
+<div class="manuscript-citation">
+  <div class="manuscript-actions">
+    <a href={arxiv}>[arXiv]</a>
+    <button type="button" class="citation-toggle" aria-expanded="false" aria-controls="manuscript-bibtex">
+      [BibTeX]
+    </button>
+  </div>
+  <div id="manuscript-bibtex" class="citation-content" hidden>
+    <p id="citation-hint" class="citation-hint">
+      Click the box to select the full entry.
+    </p>
+    <pre
+      class="citation-entry"
+      tabindex="0"
+      role="button"
+      aria-label="Select the full BibTeX entry"
+      aria-describedby="citation-hint"
+    ><code>{bibtex}</code></pre>
+  </div>
+</div>
+
+<script>
+  function bindCitation() {
+    document.querySelectorAll<HTMLElement>('.manuscript-citation').forEach((citation) => {
+      if (citation.dataset.bound) return
+      citation.dataset.bound = 'true'
+      const toggle = citation.querySelector<HTMLButtonElement>('.citation-toggle')!
+      const content = citation.querySelector<HTMLElement>('.citation-content')!
+      const entry = citation.querySelector<HTMLElement>('.citation-entry')!
+      toggle.addEventListener('click', () => {
+        content.hidden = !content.hidden
+        toggle.setAttribute('aria-expanded', String(!content.hidden))
+      })
+      const selectEntry = () => {
+        const range = document.createRange()
+        range.selectNodeContents(entry.querySelector('code')!)
+        const selection = window.getSelection()
+        selection?.removeAllRanges()
+        selection?.addRange(range)
+      }
+      entry.addEventListener('click', selectEntry)
+      entry.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault()
+          selectEntry()
+        }
+      })
+    })
+  }
+  document.addEventListener('astro:page-load', bindCitation)
+</script>
+
+<style>
+  .manuscript-actions {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+    font-size: var(--font-size-s);
+  }
+  button {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--text-primary);
+    font: inherit;
+    cursor: pointer;
+    text-decoration: underline;
+    text-decoration-color: var(--text-tertiary);
+    text-underline-offset: 0.12em;
+  }
+  button:hover {
+    text-decoration-color: var(--text-primary);
+  }
+  .citation-content {
+    margin-top: 1rem;
+  }
+  .citation-content .citation-hint {
+    margin: 0 0 0.5rem;
+    font-size: var(--font-size-s);
+    color: var(--text-secondary);
+    text-align: left;
+  }
+  pre {
+    margin: 0;
+    padding: 0.875rem 1rem;
+    border: 1px solid var(--border);
+    background: var(--code-bg);
+    font-size: var(--font-size-s);
+    line-height: 1.6;
+    letter-spacing: 0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    cursor: text;
+    user-select: all;
+  }
+  pre:focus-visible {
+    outline: 1px solid var(--text-secondary);
+    outline-offset: 3px;
+  }
+  .citation-content code {
+    font-size: inherit;
+    white-space: inherit;
+  }
+</style>

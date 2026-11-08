@@ -4,8 +4,8 @@
   "version": "1.0.0",
   "packageManager": "bun@1.4.4-canary.1",
   "scripts": {
-    "dev": "bun scripts/update-link-metadata.ts && astro dev",
-    "build": "bun run typecheck && bun scripts/update-link-metadata.ts && astro build",
+    "dev": "bun scripts/render-papers.ts && bun scripts/update-link-metadata.ts && astro dev",
+    "build": "bun scripts/render-papers.ts && bun run typecheck && bun scripts/update-link-metadata.ts && astro build && bun scripts/check-papers.ts",
     "typecheck": "bun run typecheck:ts && astro check",
     "typecheck:ts": "tsc --noEmit",
     "preview": "astro preview",
@@ -35,6 +35,7 @@
     "remark-math": "^6.0.0",
     "sanitize-html": "^2.18.1",
     "sharp": "^0.35.5",
+    "tippy.js": "6.3.7",
     "unist-util-visit": "^5.2.0"
   },
   "devDependencies": {

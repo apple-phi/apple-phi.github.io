@@ -41,7 +41,21 @@ export default defineConfig({
       rehypePlugins: [rehypeKatex, rehypeCleanup, rehypeImageProcessor, rehypeCopyCode]
     })
   },
-  integrations: [mdx(), sitemap()],
+  integrations: [
+    mdx(),
+    {
+      name: 'manuscripts',
+      hooks: {
+        'astro:config:setup': ({ injectRoute }) => {
+          injectRoute({
+            pattern: '/papers/[paper]/',
+            entrypoint: new URL('./custom/manuscript/Page.astro', import.meta.url)
+          })
+        }
+      }
+    },
+    sitemap()
+  ],
   vite: {
     resolve: {
       alias: {

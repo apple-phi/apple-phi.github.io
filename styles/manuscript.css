@@ -1,0 +1,333 @@
+/* Chiri owns the shell and theme; these rules only style Quarto's article markup. */
+.manuscript-page,
+.manuscript {
+  min-width: 0;
+}
+
+.manuscript {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-size: var(--font-size-m);
+    font-weight: var(--font-weight-bold);
+    line-height: 1.75;
+    margin: 3.75em 0 1.75em;
+    scroll-margin-top: 6rem;
+  }
+
+  .manuscript-title {
+    margin: 0;
+    line-height: 1.45;
+    text-wrap: balance;
+  }
+
+  .manuscript-header {
+    margin-bottom: 2.5rem;
+
+    #title-block-header {
+      display: flex;
+      flex-direction: column;
+      gap: 0.625rem;
+    }
+
+    p {
+      content-visibility: visible;
+    }
+  }
+
+  .manuscript-header + .manuscript-abstract h2 {
+    margin-top: 0;
+  }
+
+  .header-section-number {
+    margin-right: 0.35em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  p {
+    margin: 1.75em 0;
+    text-align: justify;
+    hyphens: auto;
+  }
+
+  a {
+    color: var(--text-primary);
+    text-decoration: underline;
+    text-decoration-color: var(--text-tertiary);
+    text-underline-offset: 0.12em;
+    transition: text-decoration-color 0.2s ease-out;
+  }
+
+  a:hover {
+    text-decoration-color: var(--text-primary);
+  }
+
+  em {
+    font-family: var(--serif);
+    font-style: italic;
+    letter-spacing: 0;
+  }
+
+  strong,
+  b {
+    font-weight: var(--font-weight-bold);
+  }
+
+  .manuscript-authors {
+    margin: 0;
+    text-align: left;
+    hyphens: none;
+  }
+
+  .manuscript-author {
+    white-space: nowrap;
+  }
+
+  .manuscript-affiliations {
+    color: var(--text-secondary);
+    font-size: var(--font-size-s);
+
+    a {
+      color: inherit;
+    }
+
+    p {
+      margin: 0;
+      text-align: left;
+      line-height: 1.65;
+    }
+  }
+
+  sup {
+    font-size: 0.75em;
+    line-height: 0;
+    vertical-align: super;
+  }
+
+  .manuscript-abstract > div {
+    text-align: justify;
+    hyphens: auto;
+  }
+
+  ul,
+  ol {
+    padding-left: 1.5em;
+  }
+
+  figure {
+    margin: 2.5rem 0;
+
+    p {
+      margin: 0;
+      text-align: left;
+    }
+  }
+
+  img {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    margin: 0 auto;
+    background: #fff;
+  }
+
+  /* Enlarge the portrait diagram without filling the column's whole width. */
+  #fig-t1-example-rgvfm img {
+    width: min(100%, 22rem);
+  }
+
+  figcaption {
+    margin: 0.75rem 0;
+    color: var(--text-secondary);
+    font-size: var(--font-size-s);
+    line-height: 1.5;
+    text-align: left;
+    hyphens: none;
+  }
+
+  .manuscript-table {
+    max-width: 100%;
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--font-size-s);
+    line-height: 1.5;
+  }
+
+  th,
+  td {
+    padding: 0.5em 0.65em;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+
+  th {
+    font-weight: var(--font-weight-bold);
+    text-align: left;
+  }
+
+  .pseudocode {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    text-align: left;
+    hyphens: none;
+  }
+
+  .equation-block,
+  .math.display {
+    display: block;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  /* Use KaTeX's own display margins and documented horizontal scroll surface. */
+  .equation-block .katex-display {
+    overflow: auto hidden;
+    scrollbar-width: thin;
+  }
+
+  .math.display .equation-row {
+    display: grid;
+    width: max-content;
+    min-width: 100%;
+    grid-template-columns: minmax(max-content, 1fr);
+    align-items: center;
+  }
+
+  .math.display .equation-row:has(> .equation-number) {
+    grid-template-columns: minmax(max-content, 1fr) auto;
+    column-gap: 1.5em;
+  }
+
+  .math.display .equation-formula {
+    white-space: nowrap;
+    text-align: center;
+  }
+
+  .math.display .equation-row > .equation-number {
+    position: static;
+  }
+
+  /* Keep the full manuscript searchable and linked, but let the browser skip
+     offscreen prose/math. Headings stay outside containment for Chiri's TOC.
+     Use existing leaf blocks so equation margins can still collapse normally. */
+  @media screen {
+    p,
+    .katex-display,
+    .csl-entry,
+    .manuscript-table,
+    figcaption,
+    .line-block {
+      content-visibility: auto;
+      contain-intrinsic-block-size: auto 8em;
+    }
+
+    .katex-display {
+      contain-intrinsic-block-size: auto 4em;
+    }
+  }
+
+  /* Stack paired plots/algorithms in the site's narrow reading column. */
+  .quarto-layout-row,
+  .columns {
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+  }
+
+  .quarto-layout-cell,
+  .column {
+    min-width: 0;
+    width: 100% !important;
+    flex-basis: auto !important;
+  }
+
+  .pseudocode p {
+    text-align: left;
+    hyphens: none;
+  }
+
+  .algorithm-change,
+  .algorithm-change .katex,
+  .algorithm-change .katex * {
+    color: #b42332;
+  }
+
+  .theorem-title {
+    margin-inline-end: 0.5em;
+  }
+
+  .appendix-contents {
+    margin: 0 0 2rem;
+    font-size: var(--font-size-s);
+
+    ol {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    li {
+      margin: 0.5rem 0;
+    }
+  }
+
+  code,
+  pre,
+  kbd {
+    font-family: var(--mono);
+    font-size: 0.9em;
+  }
+
+  .csl-entry {
+    margin: 1em 0;
+    padding-left: 1.5em;
+    text-indent: -1.5em;
+    overflow-wrap: anywhere;
+  }
+
+  .footnotes {
+    font-size: var(--font-size-s);
+  }
+
+  hr {
+    border: 0;
+    border-top: 1px solid var(--border);
+    margin: 2.5rem 0;
+  }
+
+  [id] {
+    scroll-margin-top: 6rem;
+  }
+
+  @media (max-width: 767px) {
+    p,
+    .manuscript-abstract > div {
+      text-align: left;
+      hyphens: none;
+    }
+  }
+}
+
+@media screen {
+  html.dark .manuscript img {
+    /* White maps to #1c1c1c (the page background), rather than pure black. */
+    filter: invert(0.89) hue-rotate(180deg);
+  }
+
+  html.dark .manuscript .algorithm-change,
+  html.dark .manuscript .algorithm-change .katex,
+  html.dark .manuscript .algorithm-change .katex * {
+    color: #ff8b98;
+  }
+}

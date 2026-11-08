@@ -1,0 +1,55 @@
+---
+import { parse } from 'node-html-parser'
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import BaseHead from '@/components/layout/BaseHead.astro'
+import BackButton from '@/components/ui/BackButton.astro'
+import TableOfContents from '@/components/ui/TableOfContents.astro'
+import Footer from '@/components/layout/Footer.astro'
+import { themeConfig } from '@/config'
+import '@/styles/global.css'
+import '../../styles/manuscript.css'
+import { readPapers, type Paper } from './papers'
+import Citation from './Citation.astro'
+import ReferencePreviews from './ReferencePreviews.astro'
+
+export function getStaticPaths() {
+  return readPapers().map((paper) => ({ params: { paper: paper.slug }, props: { paper } }))
+}
+
+interface Props {
+  paper: Paper
+}
+const { paper } = Astro.props
+// Import the snapshot's assets through Vite so both dev and production URLs work.
+const assets = import.meta.glob<string>('../../papers/*/figures/*', {
+  eager: true,
+  query: '?url',
+  import: 'default'
+})
+const content = parse(paper.html)
+for (const image of content.querySelectorAll('img[src]')) {
+  const source = image.getAttribute('src')!
+  const url = assets[`../../papers/${paper.slug}/${source}`]
+  if (!url) throw new Error(`Missing manuscript image: ${paper.slug}/${source}`)
+  image.setAttribute('src', url)
+  image.setAttribute('loading', 'lazy')
+  image.setAttribute('decoding', 'async')
+}
+---
+
+<BaseLayout type="post">
+  <BaseHead title={`${paper.title} · ${themeConfig.site.title}`} description={paper.description} slot="head" />
+  <main class="manuscript-page">
+    <BackButton />
+    {themeConfig.post.toc && <TableOfContents toc={paper.toc} />}
+    <article class="manuscript">
+      <div class="manuscript-header">
+        <Fragment set:html={paper.header} />
+        <Citation bibtex={paper.bibtex} arxiv={paper.arxiv} />
+      </div>
+      <Fragment set:html={content.innerHTML} />
+    </article>
+  </main>
+  <ReferencePreviews />
+  {themeConfig.general.footer && <Footer />}
+</BaseLayout>
