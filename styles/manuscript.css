@@ -237,7 +237,7 @@
     }
   }
 
-  /* Stack paired plots/algorithms in the site's narrow reading column. */
+  /* Algorithms remain stacked; paired images adapt to their actual container. */
   .quarto-layout-row,
   .columns {
     display: flex;
@@ -250,6 +250,30 @@
     min-width: 0;
     width: 100% !important;
     flex-basis: auto !important;
+  }
+
+  .quarto-layout-panel:has(.quarto-layout-cell img) {
+    container-type: inline-size;
+  }
+
+  .quarto-layout-row:has(> .quarto-layout-cell img) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+
+    figure {
+      margin: 0;
+    }
+
+    figcaption {
+      margin: 0.5rem 0 0;
+    }
+  }
+
+  @container (min-width: 28rem) {
+    .quarto-layout-row:has(> .quarto-layout-cell img) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
   }
 
   .pseudocode p {

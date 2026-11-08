@@ -23,27 +23,16 @@
       preview.className = 'manuscript manuscript-preview'
       preview.tabIndex = 0
       preview.setAttribute('aria-label', `Preview: ${reference.textContent?.trim()}`)
-      const cites = reference.closest<HTMLElement>('[data-cites]')?.dataset.cites
-      const sources =
-        cites && reference.getAttribute('role') === 'doc-biblioref'
-          ? cites
-              .split(/\s+/)
-              .map((key) => document.getElementById(`ref-${key}`))
-              .filter((node): node is HTMLElement => !!node)
-          : [target]
-
-      for (const source of sources) {
-        const clone = source.cloneNode(true) as HTMLElement
-        clone.removeAttribute('id')
-        for (const element of clone.querySelectorAll('[id], [aria-describedby], [aria-labelledby]')) {
-          element.removeAttribute('id')
-          element.removeAttribute('aria-describedby')
-          element.removeAttribute('aria-labelledby')
-        }
-        for (const element of clone.querySelectorAll('.footnote-back, .footnote-backref, script')) element.remove()
-        for (const image of clone.querySelectorAll('img')) image.loading = 'eager'
-        preview.append(clone)
+      const clone = target.cloneNode(true) as HTMLElement
+      clone.removeAttribute('id')
+      for (const element of clone.querySelectorAll('[id], [aria-describedby], [aria-labelledby]')) {
+        element.removeAttribute('id')
+        element.removeAttribute('aria-describedby')
+        element.removeAttribute('aria-labelledby')
       }
+      for (const element of clone.querySelectorAll('.footnote-back, .footnote-backref, script')) element.remove()
+      for (const image of clone.querySelectorAll('img')) image.loading = 'eager'
+      preview.append(clone)
       return preview
     }
 
