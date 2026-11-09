@@ -34,31 +34,36 @@ color:
 
 typography:
   fonts:
-    - family: Inter
+    - family: Sohne
       source: file
       files:
-        # Variable asset, registered at the weights used by the core roles.
-        - path: public/fonts/Inter.woff2
+        - path: public/fonts/Sohne-Buch.woff2
           weight: 400
           style: normal
-        - path: public/fonts/Inter.woff2
+        - path: public/fonts/Sohne-Kraftig.woff2
           weight: 500
           style: normal
-    - family: Besley
+        - path: public/fonts/Sohne-Halbfett.woff2
+          weight: 600
+          style: normal
+        - path: public/fonts/Sohne-Dreiviertelfett.woff2
+          weight: 700
+          style: normal
+    - family: Newsreader
       source: file
       files:
-        - path: public/fonts/Besley-Italic.woff2
+        - path: public/fonts/Newsreader-Italic.woff2
           style: italic
           weight: 400
     - family: SF Mono
       source: system
   base:
-    family: Inter
-    size: 15px
+    family: Sohne
+    size: 16px
     weight: 400
     line-height: 1.75
   headings:
-    family: Inter
+    family: Sohne
     weight: 500
     color: foreground
     line-height: 1.75
@@ -75,14 +80,16 @@ defaults:
   chiri:
     wordmark: LUCAS NG
     content-width: 35rem
-    heading-size: 15px
-    small-text-size: 13px
+    heading-size: 16px
+    small-text-size: 14px
     letter-spacing: -0.02em
     font-feature-settings: '"ss03" 1'
     emphasis:
-      family: Besley
+      family: Newsreader
+      size: calc(1em + 1px)
       style: italic
       weight: 400
+      dark-color: white
     monospace-fallbacks: [SFMono-Regular, ui-monospace, monospace]
     dark:
       background: '#1c1c1c'

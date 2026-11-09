@@ -335,7 +335,7 @@ Following the setup of @bortoli2022riemannian and @chen2024rfm, we evaluate on p
 
 In @fig-torus-dim-sweep-fourier-mmd2, the MMD$^2$ gives an interesting comparison. We see that before dimension 200, there is a consistent ordering of methods with our method best, RFM second, and RG-VFM last. Beyond this, our method maintains its advantage while RFM and RG-VFM swap places. This is consistent with the idea of [Section 3.4](#sec-rfm-likelihood){.paper-section-ref} that awareness of geometric constraints is important for scalability.
 
-| $d$ | **Our method** | **RFM** Paper results | **RFM** Reproduced | **RG-VFM** | **Riemannian** **Score-Based** |
+| $d$ | **Our method** | **RFM** <br> Paper results | **RFM** <br> Reproduced | **RG-VFM** | **Riemannian** <br> **Score-Based** |
 | ---: | :---: | :---: | :---: | :---: | :---: |
 | $1$ | **-0.1904** $\pm$ 0.001 | [-0.2051 $\pm$ 0.010 †]{.below-bound} | -0.1715 $\pm$ 0.006 | [-0.2171 $\pm$ 0.001 †]{.below-bound} | -0.1482 $\pm$ 0.010 |
 | $2$ | **-0.1900** $\pm$ 0.005 | -0.1495 $\pm$ 0.010 | -0.1658 $\pm$ 0.004 | [-0.2142 $\pm$ 0.003 †]{.below-bound} | -0.1412 $\pm$ 0.010 |

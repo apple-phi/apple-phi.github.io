@@ -65,9 +65,6 @@ const { toc = [] }: TOCProps = Astro.props
       if (!state.container) return false
 
       state.linkList = Array.from(document.querySelectorAll('.toc-link'))
-      state.headingList = Array.from(document.querySelectorAll('h1, h2, h3')).filter(
-        (heading, index, headings) => !(index === 0 && headings[0].tagName === 'H1') && heading.id
-      )
       state.titleLink = document.querySelector('.toc-link.toc-title')
 
       // Build heading map
@@ -78,6 +75,11 @@ const { toc = [] }: TOCProps = Astro.props
           state.headingMap.set(href.substring(1), link)
         }
       })
+
+      // A subsection omitted from the TOC still belongs to its listed section.
+      state.headingList = Array.from(document.querySelectorAll('h1, h2, h3, h4, h5, h6')).filter(
+        (heading) => heading.id && state.headingMap.has(heading.id)
+      )
 
       return true
     }

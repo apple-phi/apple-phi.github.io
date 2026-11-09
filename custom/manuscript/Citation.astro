@@ -9,36 +9,74 @@ const { bibtex, arxiv } = Astro.props
 <div class="manuscript-citation">
   <div class="manuscript-actions">
     <a href={arxiv}>[arXiv]</a>
-    <button type="button" class="citation-toggle" aria-expanded="false" aria-controls="manuscript-bibtex">
+    <button type="button" class="citation-toggle" aria-haspopup="dialog">
       [BibTeX]
     </button>
   </div>
-  <div id="manuscript-bibtex" class="citation-content" hidden>
-    <p id="citation-hint" class="citation-hint">
-      Click the box to select the full entry.
-    </p>
-    <pre
-      class="citation-entry"
-      tabindex="0"
-      role="button"
-      aria-label="Select the full BibTeX entry"
-      aria-describedby="citation-hint"
-    ><code>{bibtex}</code></pre>
-  </div>
+  <template class="citation-template">
+    <div class="citation-content">
+      <p id="citation-hint" class="citation-hint">
+        Click the entry to select it all.
+      </p>
+      <pre
+        class="citation-entry"
+        tabindex="0"
+        role="button"
+        aria-label="Select the full BibTeX entry"
+        aria-describedby="citation-hint"
+      ><code>{bibtex}</code></pre>
+    </div>
+  </template>
 </div>
 
 <script>
+  import tippy, { hideAll, type Instance } from 'tippy.js'
+  import 'tippy.js/dist/tippy.css'
+
+  let destroy: (() => void) | undefined
+
   function bindCitation() {
+    destroy?.()
+    const events = new AbortController()
+    const instances: Instance[] = []
     document.querySelectorAll<HTMLElement>('.manuscript-citation').forEach((citation) => {
-      if (citation.dataset.bound) return
       citation.dataset.bound = 'true'
       const toggle = citation.querySelector<HTMLButtonElement>('.citation-toggle')!
-      const content = citation.querySelector<HTMLElement>('.citation-content')!
-      const entry = citation.querySelector<HTMLElement>('.citation-entry')!
-      toggle.addEventListener('click', () => {
-        content.hidden = !content.hidden
-        toggle.setAttribute('aria-expanded', String(!content.hidden))
+      const template = citation.querySelector<HTMLTemplateElement>('.citation-template')!
+      const content = template.content.firstElementChild!.cloneNode(true) as HTMLElement
+      const entry = content.querySelector<HTMLElement>('.citation-entry')!
+      const instance = tippy(toggle, {
+        content,
+        trigger: 'click',
+        interactive: true,
+        appendTo: () => document.body,
+        theme: 'manuscript',
+        role: 'dialog',
+        aria: { content: null, expanded: true },
+        placement: 'bottom-start',
+        maxWidth: 512,
+        arrow: false,
+        duration: 0,
+        popperOptions: {
+          strategy: 'fixed',
+          modifiers: [
+            { name: 'preventOverflow', options: { padding: 12, altAxis: true } },
+            { name: 'flip', options: { padding: 12 } }
+          ]
+        },
+        onShow(instance) {
+          hideAll({ exclude: instance })
+        },
+        onMount(instance) {
+          instance.popper.querySelector('[role="dialog"]')?.setAttribute('aria-label', 'BibTeX citation')
+          toggle.setAttribute('aria-controls', instance.popper.id)
+          entry.focus({ preventScroll: true })
+        },
+        onHidden() {
+          toggle.removeAttribute('aria-controls')
+        }
       })
+      instances.push(instance)
       const selectEntry = () => {
         const range = document.createRange()
         range.selectNodeContents(entry.querySelector('code')!)
@@ -46,16 +84,45 @@ const { bibtex, arxiv } = Astro.props
         selection?.removeAllRanges()
         selection?.addRange(range)
       }
-      entry.addEventListener('click', selectEntry)
-      entry.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault()
-          selectEntry()
-        }
-      })
+      entry.addEventListener('click', selectEntry, { signal: events.signal })
+      entry.addEventListener(
+        'keydown',
+        (event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault()
+            selectEntry()
+          }
+        },
+        { signal: events.signal }
+      )
+      document.addEventListener(
+        'keydown',
+        (event) => {
+          if (!instance.state.isVisible) return
+          if (event.key === 'Escape') {
+            event.preventDefault()
+            const restoreFocus = instance.popper.contains(document.activeElement)
+            instance.hide()
+            if (restoreFocus) toggle.focus({ preventScroll: true })
+          } else if (event.key === 'Tab' && instance.popper.contains(document.activeElement)) {
+            instance.hide()
+            toggle.focus({ preventScroll: true })
+            if (event.shiftKey) event.preventDefault()
+          }
+        },
+        { signal: events.signal }
+      )
     })
+    destroy = () => {
+      events.abort()
+      instances.forEach((instance) => instance.destroy())
+    }
   }
   document.addEventListener('astro:page-load', bindCitation)
+  document.addEventListener('astro:before-swap', () => {
+    destroy?.()
+    destroy = undefined
+  })
 </script>
 
 <style>
@@ -80,9 +147,6 @@ const { bibtex, arxiv } = Astro.props
   button:hover {
     text-decoration-color: var(--text-primary);
   }
-  .citation-content {
-    margin-top: 1rem;
-  }
   .citation-content .citation-hint {
     margin: 0 0 0.5rem;
     font-size: var(--font-size-s);
@@ -91,9 +155,8 @@ const { bibtex, arxiv } = Astro.props
   }
   pre {
     margin: 0;
-    padding: 0.875rem 1rem;
-    border: 1px solid var(--border);
-    background: var(--code-bg);
+    padding: 0;
+    font-family: var(--mono);
     font-size: var(--font-size-s);
     line-height: 1.6;
     letter-spacing: 0;
@@ -107,6 +170,7 @@ const { bibtex, arxiv } = Astro.props
     outline-offset: 3px;
   }
   .citation-content code {
+    font-family: inherit;
     font-size: inherit;
     white-space: inherit;
   }

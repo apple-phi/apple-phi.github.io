@@ -4,6 +4,10 @@
   min-width: 0;
 }
 
+html.dark .manuscript em {
+  color: #ffffff;
+}
+
 .manuscript {
   h1,
   h2,
@@ -67,7 +71,9 @@
 
   em {
     font-family: var(--serif);
+    font-size: calc(1em + 1px);
     font-style: italic;
+    line-height: 1lh;
     letter-spacing: 0;
   }
 
@@ -190,6 +196,24 @@
     max-width: 100%;
   }
 
+  .math-tail {
+    display: inline-block;
+    white-space: nowrap;
+  }
+
+  .math-punctuation {
+    font-family: var(--sans);
+    /* Undo KaTeX's 1.21em scale for surrounding prose punctuation. */
+    font-size: calc(1em / 1.21);
+    letter-spacing: var(--spacing-m);
+  }
+
+  em .math-punctuation {
+    font-family: var(--serif);
+    font-style: italic;
+    letter-spacing: 0;
+  }
+
   /* Use KaTeX's own display margins and documented horizontal scroll surface. */
   .equation-block .katex-display {
     overflow: auto hidden;
@@ -222,7 +246,8 @@
      offscreen prose/math. Headings stay outside containment for Chiri's TOC.
      Use existing leaf blocks so equation margins can still collapse normally. */
   @media screen {
-    p,
+    /* WebKit loses native list markers when their paragraphs are contained. */
+    p:not(li p),
     .katex-display,
     .csl-entry,
     .manuscript-table,
@@ -287,8 +312,11 @@
     color: #b42332;
   }
 
-  .theorem-title {
-    margin-inline-end: 0.5em;
+  .theorem-title,
+  .proof-title {
+    display: inline-block;
+    margin-inline-end: 1em;
+    white-space: nowrap;
   }
 
   .appendix-contents {

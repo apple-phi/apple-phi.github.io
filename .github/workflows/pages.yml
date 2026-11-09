@@ -25,7 +25,8 @@ jobs:
           bun-version: '1.4.4'
       - run: bun install --frozen-lockfile
       - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
-      - run: bun run build
+      # Native lint runs locally on canary; keep CI on the stable runtime.
+      - run: bun run typecheck && bun run build && bun test
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
           path: dist

@@ -6,12 +6,12 @@
   --content-width: 25rem;
 
   /* Typography */
-  --sans: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
-  --serif: Besley, Baskerville, Georgia, 'Times New Roman', Times, serif;
+  --sans: Sohne, -apple-system, BlinkMacSystemFont, sans-serif;
+  --serif: Newsreader, Baskerville, Georgia, 'Times New Roman', Times, serif;
   --mono: 'SF Mono', SFMono-Regular, ui-monospace, monospace;
 
-  --font-size-s: 0.8125rem;
-  --font-size-m: 0.9375rem;
+  --font-size-s: 0.875rem;
+  --font-size-m: 1rem;
   --font-size-l: 1.0625rem;
 
   --font-weight-light: 350;

@@ -1,5 +1,6 @@
 import { spawnSync } from 'node:child_process'
-import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { createHash } from 'node:crypto'
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { parse } from 'node-html-parser'
@@ -7,6 +8,43 @@ import katex from 'katex'
 import type { Paper } from '../custom/manuscript/papers'
 
 const root = fileURLToPath(new URL('../', import.meta.url))
+const entries = readdirSync(join(root, 'papers'), { withFileTypes: true })
+  .filter((entry) => entry.isDirectory())
+  .sort((a, b) => a.name.localeCompare(b.name))
+const inputs = [
+  '_quarto.yml',
+  '_brand.yml',
+  'custom/manuscript/title-block.html',
+  'scripts/render-papers.ts',
+  'bun.lock',
+  ...entries.flatMap((entry) =>
+    ['index.qmd', 'refs.bib', '_metadata.yml']
+      .map((name) => `papers/${entry.name}/${name}`)
+      .filter((path) => existsSync(join(root, path)))
+  )
+].sort()
+const hash = createHash('sha256')
+for (const path of inputs)
+  hash
+    .update(path)
+    .update('\0')
+    .update(readFileSync(join(root, path)))
+    .update('\0')
+const fingerprint = hash.digest('hex')
+const fingerprintPath = join(root, 'build/papers.fingerprint')
+const preparedPath = join(root, 'build/papers.json')
+const outputs = [preparedPath, ...entries.map((entry) => join(root, 'build/quarto/papers', entry.name, 'index.html'))]
+if (
+  !process.argv.includes('--force') &&
+  existsSync(fingerprintPath) &&
+  readFileSync(fingerprintPath, 'utf8') === fingerprint &&
+  outputs.every(existsSync)
+) {
+  process.stdout.write('Manuscripts unchanged; using cached render.\n')
+  process.exit(0)
+}
+// An interrupted or failed preparation must never leave a valid cache marker.
+rmSync(fingerprintPath, { force: true })
 const render = spawnSync(
   process.platform === 'win32' ? 'uvx.exe' : 'uvx',
   ['--from', 'quarto-cli==1.11.9', 'quarto', 'render', '--no-execute'],
@@ -16,8 +54,7 @@ if (render.error) throw render.error
 if (render.status !== 0) process.exit(render.status ?? 1)
 
 const papers: Paper[] = []
-for (const entry of readdirSync(join(root, 'papers'), { withFileTypes: true })) {
-  if (!entry.isDirectory()) continue
+for (const entry of entries) {
   const document = parse(readFileSync(join(root, 'build/quarto/papers', entry.name, 'index.html'), 'utf8'))
   const body = document.querySelector('body')!
   const header = body.querySelector('#title-block-header')!
@@ -86,6 +123,30 @@ for (const entry of readdirSync(join(root, 'papers'), { withFileTypes: true })) 
         strict: 'error'
       })
     )
+    if (math.classList.contains('inline')) {
+      const siblings = math.parentNode?.childNodes ?? []
+      const next = siblings[siblings.indexOf(math) + 1]
+      const punctuation = next?.nodeType === 3 ? next.rawText.match(/^[,.;:!?%…)\]}’”]+/u)?.[0] : undefined
+      if (punctuation) {
+        const visual = math.querySelector('.katex-html')!
+        const last = visual
+          .querySelectorAll('.katex-base')
+          .filter((base) => base.parentNode === visual)
+          .at(-1)
+        if (!last) throw new Error(`Missing inline-math ending: ${entry.name}`)
+        // Group only the final unbreakable KaTeX fragment with its punctuation.
+        // Keep punctuation outside aria-hidden visual math so it is read once,
+        // and leave the original accessible MathML/TeX annotation untouched.
+        math
+          .querySelector('.katex')!
+          .insertAdjacentHTML(
+            'beforeend',
+            `<span class="math-tail"><span class="katex-html" aria-hidden="true">${last.outerHTML}</span><span class="math-punctuation">${punctuation}</span></span>`
+          )
+        last.remove()
+        next.rawText = next.rawText.slice(punctuation.length)
+      }
+    }
     if (math.classList.contains('display')) {
       // Keep KaTeX's accessible MathML intact. Group only its visual formula
       // into a grid cell so the equation number takes up real layout space.
@@ -177,5 +238,6 @@ for (const entry of readdirSync(join(root, 'papers'), { withFileTypes: true })) 
   })
 }
 mkdirSync(join(root, 'build'), { recursive: true })
-writeFileSync(join(root, 'build/papers.json'), JSON.stringify(papers))
+writeFileSync(preparedPath, JSON.stringify(papers))
+writeFileSync(fingerprintPath, fingerprint)
 process.stdout.write(`Prepared ${papers.length} Quarto manuscript(s) for Astro.\n`)

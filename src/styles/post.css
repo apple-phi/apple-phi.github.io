@@ -46,8 +46,14 @@
 /* Italic text */
 .prose em {
   font-family: var(--serif);
+  font-size: calc(1em + 1px);
   font-style: italic;
+  line-height: 1lh;
   letter-spacing: 0;
+}
+
+html.dark .prose em {
+  color: #ffffff;
 }
 
 /* Links */

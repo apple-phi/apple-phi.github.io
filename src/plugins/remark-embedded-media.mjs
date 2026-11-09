@@ -168,7 +168,7 @@ function renderLinkIcon() {
  * A remark plugin that converts custom directives to embedded media HTML elements
  * Supports: link cards, Spotify, YouTube, Bilibili, X posts, and GitHub repository cards
  */
-const embedHandlers = {
+export const embedHandlers = {
   // Link Card
   link: (node) => {
     const rawUrl = node.attributes?.url ?? ''

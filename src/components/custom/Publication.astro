@@ -26,7 +26,7 @@ const { title, authors, venue, arxiv, projectPage } = Astro.props
   </p>
   <p class="metadata">
     <em class="venue">{venue}</em>
-    {projectPage && <a href={projectPage}>[project page]</a>}
+    {projectPage && <a href={projectPage}>[paper page]</a>}
   </p>
 </article>
 
@@ -50,7 +50,7 @@ const { title, authors, venue, arxiv, projectPage } = Astro.props
   .publication h3 {
     margin: 0 0 0.25rem;
     font-size: var(--font-size-m);
-    font-weight: var(--font-weight-bold);
+    font-weight: var(--font-weight-regular);
     line-height: 1.75;
   }
 
@@ -77,7 +77,9 @@ const { title, authors, venue, arxiv, projectPage } = Astro.props
     font-size: inherit;
   }
 
-  .publication .venue {
+  .publication .metadata > .venue {
+    font-size: calc(1em + 1px);
+    line-height: 1lh;
     white-space: nowrap;
   }
 
