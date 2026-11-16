@@ -1,4 +1,5 @@
 import { participants, presentation } from './presentation'
+import { generateName, generateToken, tokenPattern } from './identity'
 
 interface Env {
   DB: D1Database
@@ -14,7 +15,6 @@ interface Mailbox {
 }
 
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-const tokenPattern = /^[0-9a-f]{64}$/
 const namePattern = /^[A-Za-z][A-Za-z0-9_.-]{1,39}$/
 const rules =
   'URL-encode message text. Keep your token private. Poll no more than once every 15 seconds. On HTTP 429, wait Retry-After seconds. Optionally supply a unique UUID as id, and reuse it when retrying to prevent duplicates.'
@@ -176,31 +176,33 @@ async function submit(request: Request, env: Env, url: URL) {
   if (mailbox && chosen !== null && chosen !== mailbox.name)
     return response(request, 400, { error: 'identity_already_assigned' })
   if (!mailbox) {
-    const newToken = Array.from(crypto.getRandomValues(new Uint8Array(32)), (byte) =>
-      byte.toString(16).padStart(2, '0')
-    ).join('')
-    const adjectives = ['Amber', 'Silver', 'Quiet', 'Bright', 'Cedar', 'Blue', 'Copper', 'Swift']
-    const animals = ['Heron', 'Otter', 'Finch', 'Fox', 'Owl', 'Wren', 'Lynx', 'Lark']
-    const name =
-      chosen ??
-      `${adjectives[parseInt(newToken[0]!, 16) % adjectives.length]}${animals[parseInt(newToken[1]!, 16) % animals.length]}-${newToken.slice(2, 12)}`
-    if (
-      reserved.some((reservedName) => reservedName.toLowerCase() === name.toLowerCase()) ||
-      (await env.DB.prepare('SELECT token FROM conversations WHERE name = ? COLLATE NOCASE').bind(name).first())
-    )
-      return response(request, 409, {
-        error: 'name_unavailable',
-        instructions: 'Choose another name or omit name to receive one automatically.'
-      })
-    const view = presentation()
-    await env.DB.batch([
-      env.DB.prepare(
-        'INSERT INTO conversations (token, opening_id, recipient, name, question_index) VALUES (?, ?, ?, ?, ?) ON CONFLICT DO NOTHING'
-      ).bind(newToken, id, to, name, view.index),
-      env.DB.prepare(
-        "INSERT INTO messages (id, thread, sender, recipient, text) SELECT ?, token, 'visitor', ?, ? FROM conversations WHERE opening_id = ? ON CONFLICT(id) DO NOTHING"
-      ).bind(id, to, text, id)
-    ])
+    for (let attempt = 0; attempt < 5; attempt++) {
+      const newToken = generateToken()
+      const occupied =
+        chosen === null ? (await env.DB.prepare('SELECT name FROM conversations').all<{ name: string }>()).results : []
+      const name = chosen ?? generateName([...reserved, ...occupied.map((row) => row.name)])
+      if (
+        chosen !== null &&
+        (reserved.some((reservedName) => reservedName.toLowerCase() === name.toLowerCase()) ||
+          (await env.DB.prepare('SELECT token FROM conversations WHERE name = ? COLLATE NOCASE').bind(name).first()))
+      )
+        return response(request, 409, {
+          error: 'name_unavailable',
+          instructions: 'Choose another name or omit name to receive one automatically.'
+        })
+      const view = presentation()
+      await env.DB.batch([
+        env.DB.prepare(
+          'INSERT INTO conversations (token, opening_id, recipient, name, question_index) VALUES (?, ?, ?, ?, ?) ON CONFLICT DO NOTHING'
+        ).bind(newToken, id, to, name, view.index),
+        env.DB.prepare(
+          "INSERT INTO messages (id, thread, sender, recipient, text) SELECT ?, token, 'visitor', ?, ? FROM conversations WHERE opening_id = ? ON CONFLICT(id) DO NOTHING"
+        ).bind(id, to, text, id)
+      ])
+      if (await env.DB.prepare('SELECT token FROM conversations WHERE opening_id = ?').bind(id).first()) break
+      if (chosen !== null) return response(request, 409, { error: 'name_unavailable' })
+      if (attempt === 4) return response(request, 503, { error: 'unavailable' })
+    }
   } else {
     await env.DB.prepare(
       "INSERT INTO messages (id, thread, sender, recipient, text) VALUES (?, ?, 'visitor', ?, ?) ON CONFLICT(id) DO NOTHING"

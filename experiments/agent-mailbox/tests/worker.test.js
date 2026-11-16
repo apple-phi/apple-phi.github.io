@@ -2,6 +2,7 @@ import { test, expect } from 'bun:test'
 import { Database } from 'bun:sqlite'
 import worker from '../worker'
 import { presentation, participants } from '../presentation'
+import { generateName, generateToken, tokenPattern } from '../identity'
 
 test('health checks the database binding without writing and returns uncached JSON', async () => {
   let sql
@@ -97,7 +98,7 @@ test('real SQL supports opening, retrying, continuing, researcher replies and cu
     const id = crypto.randomUUID()
     const input = { id, text: "Hello, what's new?" }
     const first = await (await call('/s', input)).json()
-    expect(first.thread).toMatch(/^[0-9a-f]{64}$/)
+    expect(first.thread).toMatch(/^[A-Za-z0-9_-]{22}$/)
     expect(await (await call('/s', input)).json()).toEqual(first)
     expect((await call('/s', { ...input, text: 'Changed' })).status).toBe(409)
     expect(database.query('SELECT COUNT(*) AS n FROM conversations').get().n).toBe(1)
@@ -242,7 +243,7 @@ test('first send assigns identity without joining and shows the approved timesta
     expect(text).toContain('agents are currently browsing this site!')
     expect(text).not.toContain('/join')
     const sent = await (await call('/s', { text: 'A question' })).json()
-    expect(sent.name).toMatch(/^[A-Za-z]+-[0-9a-f]{10}$/)
+    expect(sent.name).toMatch(/^[A-Za-z]+$/)
     expect(sent.token).toBe(sent.thread)
     expect(sent.waiting).toMatch(/reply to you by (15|30|45|60) mins \(estimate as of .* UTC\)\./)
     expect(sent.respond).toContain(`token=${sent.token}`)
@@ -326,6 +327,44 @@ test('identity migration preserves old messages and private tokens', async () =>
       text: 'Legacy message',
       recipient: 'researcher'
     })
+  } finally {
+    database.close()
+  }
+})
+
+test('new tokens encode 128 random bits in 22 URL-safe characters', () => {
+  const tokens = new Set()
+  for (let i = 0; i < 100; i++) {
+    const token = generateToken()
+    expect(token).toMatch(/^[A-Za-z0-9_-]{22}$/)
+    expect(tokenPattern.test(token)).toBe(true)
+    expect(Buffer.from(token, 'base64url')).toHaveLength(16)
+    tokens.add(token)
+  }
+  expect(tokens.size).toBe(100)
+  expect(tokenPattern.test('a'.repeat(64))).toBe(true)
+  for (const value of ['x'.repeat(21), 'x'.repeat(23), 'a'.repeat(63), 'a'.repeat(65), '!' + 'a'.repeat(21)])
+    expect(tokenPattern.test(value)).toBe(false)
+})
+
+test('generated names have no suffix and skip occupied names case-insensitively', () => {
+  expect(generateName([], 0)).toBe('AmberHeron')
+  expect(generateName(['amberheron'], 0)).toBe('AmberOtter')
+  expect(generateName(['AmberHeron', 'AmberOtter'], 0)).toBe('AmberFinch')
+  expect(generateName([], 256)).toBe('AmberAmberHeron')
+})
+
+test('existing long tokens still support retrieval and follow-up messages', async () => {
+  const { database, call } = await mailbox()
+  try {
+    const token = 'b'.repeat(64)
+    database
+      .query("INSERT INTO conversations (token,opening_id,recipient,name) VALUES (?,?,'researcher','LegacyVisitor')")
+      .run(token, crypto.randomUUID())
+    expect((await call('/s', { token, text: 'Still works' })).status).toBe(200)
+    const result = await (await call('/t', { token })).json()
+    expect(result.name).toBe('LegacyVisitor')
+    expect(result.messages[0].text).toBe('Still works')
   } finally {
     database.close()
   }

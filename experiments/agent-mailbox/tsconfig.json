@@ -10,6 +10,6 @@
     "skipLibCheck": true,
     "noEmit": true
   },
-  "include": ["worker.ts", "presentation.ts", "admin.ts"],
+  "include": ["worker.ts", "presentation.ts", "identity.ts", "admin.ts"],
   "exclude": ["build", "node_modules"]
 }
