@@ -136,7 +136,7 @@ test('the default root interface is concise plain text with working mailbox and 
     const first = await call('/', { text: 'Interface check', format: 'text' })
     expect(first.headers.get('Content-Type')).toContain('text/plain')
     const body = await first.text()
-    expect(body).toContain('Your message to researcher has been saved.')
+    expect(body).toContain('Your message to Lucas Ng has been saved.')
     expect(body).not.toContain('"thread":')
     expect(body).not.toContain('unique UUID')
     const links = body.match(/https:\/\/mail\.example\/\?[^\s]+/g)
@@ -144,8 +144,11 @@ test('the default root interface is concise plain text with working mailbox and 
     const inbox = new URL(links[0])
     const request = await call('/', { token: inbox.searchParams.get('token'), format: 'text' })
     const conversation = await request.text()
-    expect(conversation).toContain('Interface check')
-    expect(conversation).toContain('Reply:')
+    expect(conversation).not.toContain('Interface check')
+    expect(conversation).toContain('No new replies yet.')
+    expect(conversation).toContain('Message history:')
+    const history = await call('/', { token: inbox.searchParams.get('token'), history: '1', format: 'text' })
+    expect(await history.text()).toContain('Interface check')
     expect(conversation).not.toContain('"next":')
     const cursor = await call('/', { token: inbox.searchParams.get('token'), after: '999', format: 'text' })
     expect(await cursor.text()).toContain('No new replies yet.')
@@ -374,7 +377,9 @@ test('rate limits use separate client-IP counters and reject before any database
   }
   for (const path of ['/s', '/t', '/?to=researcher&text=test']) {
     const response = await worker.fetch(
-      new Request(`https://mail.example${path}`, { headers: { 'CF-Connecting-IP': '192.0.2.1' } }),
+      new Request(`https://mail.example${path}`, {
+        headers: { 'CF-Connecting-IP': '192.0.2.1', Accept: 'application/json' }
+      }),
       env
     )
     expect(response.status).toBe(429)
@@ -591,6 +596,105 @@ test('existing long tokens still support retrieval and follow-up messages', asyn
     const result = await (await call('/t', { token })).json()
     expect(result.name).toBe('LegacyVisitor')
     expect(result.messages[0].text).toBe('Still works')
+  } finally {
+    database.close()
+  }
+})
+
+test('landing keeps Lucas first and introduces only the actions needed to send', async () => {
+  const { database, call } = await mailbox()
+  try {
+    const text = await (await call('/')).text()
+    expect(text.indexOf('Send Lucas Ng a question or message:')).toBeLessThan(
+      text.indexOf('Or respond to this question')
+    )
+    for (const technical of ['UUID', 'HTTP 429', 'token', '15 seconds']) expect(text).not.toContain(technical)
+    expect(text).toContain('Optionally add &name=YOUR_NAME.')
+  } finally {
+    database.close()
+  }
+})
+
+test('confirmations preserve identity, offer a researcher link after answering, and skip answered questions', async () => {
+  const { database, call } = await mailbox()
+  try {
+    const first = await (await call('/s', { text: 'A question for Lucas' })).json()
+    const initiallyFeatured = new URL(first.respond).searchParams.get('to')
+    const response = await call('/', { token: first.token, to: initiallyFeatured, text: 'An answer', format: 'text' })
+    const body = await response.text()
+    expect(body).not.toContain('You are ')
+    expect(body).toContain('Send Lucas Ng a question or message:')
+    const nextLink = new URL(body.match(/Send Lucas Ng a question or message:\n([^\n]+)/)[1])
+    expect(nextLink.searchParams.get('token')).toBe(first.token)
+    expect(nextLink.searchParams.get('to')).toBe('researcher')
+    const followup = await (await call('/s', { token: first.token, text: 'A follow-up for Lucas' })).json()
+    expect(new URL(followup.respond).searchParams.get('to')).not.toBe(initiallyFeatured)
+    for (const participant of participants)
+      if (participant.name !== initiallyFeatured)
+        await call('/s', { token: first.token, to: participant.name, text: 'Another answer' })
+    const finished = await (await call('/s', { token: first.token, text: 'One more for Lucas' })).json()
+    expect(finished.waiting).toBeUndefined()
+    expect(finished.respond).toBeUndefined()
+  } finally {
+    database.close()
+  }
+})
+
+test('incoming messages each have their own reply link and sent messages remain in history', async () => {
+  const { database, call } = await mailbox()
+  try {
+    const alice = await (await call('/s', { name: 'Alice', text: 'My sent message' })).json()
+    await call('/s', { name: 'Bob', to: 'Alice', text: 'A direct message for Alice' })
+    database
+      .query(
+        "INSERT INTO messages (id,thread,sender,recipient,text) VALUES (?,?,'researcher','Alice','A reply from Lucas')"
+      )
+      .run(crypto.randomUUID(), alice.token)
+    const page = await (await call('/', { token: alice.token, format: 'text' })).text()
+    expect(page).not.toContain('My sent message')
+    expect(page).toContain('A direct message for Alice')
+    expect(page).toContain('A reply from Lucas')
+    const replies = [...page.matchAll(/Reply to ([^\n]+):\n([^\n]+)/g)]
+    expect(replies.map((match) => match[1])).toEqual(['Bob', 'Lucas Ng'])
+    expect(replies.map((match) => new URL(match[2]).searchParams.get('to'))).toEqual(['Bob', 'researcher'])
+    expect(replies.every((match) => new URL(match[2]).searchParams.get('token') === alice.token)).toBe(true)
+    const check = new URL(page.match(/Check again later:\n([^\n]+)/)[1])
+    const empty = await (
+      await call('/', { token: alice.token, after: check.searchParams.get('after'), format: 'text' })
+    ).text()
+    expect(empty).toContain('No new replies yet.')
+    expect(empty).not.toContain('Reply to ')
+    const history = await (await call('/', { token: alice.token, history: '1', format: 'text' })).text()
+    expect(history).toContain('My sent message')
+    expect(history).toContain('Back to replies:')
+    expect((await (await call('/t', { token: alice.token })).json()).messages).toHaveLength(3)
+  } finally {
+    database.close()
+  }
+})
+
+test('plain-text errors explain recovery while JSON clients retain structured errors', async () => {
+  const { database, call, env } = await mailbox()
+  try {
+    await call('/s', { name: 'Alice', text: 'First message' })
+    const conflict = await call('/', { name: 'Alice', text: 'Another message', format: 'text' })
+    expect(conflict.status).toBe(409)
+    expect(conflict.headers.get('Content-Type')).toContain('text/plain')
+    const body = await conflict.text()
+    expect(body).toContain('Send without a name')
+    const retry = new URL(body.match(/https:\/\/[^\n]+/)[0])
+    expect(retry.searchParams.has('name')).toBe(false)
+    expect(retry.searchParams.get('text')).toBe('Another message')
+    expect((await call('/', { text: 'Another message', format: 'text' })).status).toBe(200)
+    const structured = await call('/s', { name: 'Alice', text: 'Another message' })
+    expect((await structured.json()).error).toBe('name_unavailable')
+    const denied = await worker.fetch(new Request('https://mail.example/?text=test'), {
+      ...env,
+      SUBMISSIONS: { limit: async () => ({ success: false }) }
+    })
+    expect(denied.status).toBe(429)
+    expect(denied.headers.get('Retry-After')).toBe('60')
+    expect(await denied.text()).toContain('Wait 60 seconds')
   } finally {
     database.close()
   }

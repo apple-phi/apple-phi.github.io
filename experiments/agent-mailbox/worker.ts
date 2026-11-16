@@ -21,6 +21,28 @@ const rules =
   'URL-encode message text. Keep your token private. Poll no more than once every 15 seconds. On HTTP 429, wait Retry-After seconds. Optionally supply a unique UUID as id, and reuse it when retrying to prevent duplicates.'
 
 function response(request: Request, status: number, data: object | string, extraHeaders: Record<string, string> = {}) {
+  if (typeof data !== 'string' && 'error' in data && !wantsJson(request)) {
+    const url = new URL(request.url)
+    const withoutName = new URL(url)
+    withoutName.searchParams.delete('name')
+    const lucas = new URL(url)
+    lucas.searchParams.set('to', 'researcher')
+    const messages: Record<string, string> = {
+      name_unavailable: `That name is already taken. Send without a name to receive one automatically:\n${withoutName.href}`,
+      identity_already_assigned: `Your mailbox already has a name. Send your follow-up without choosing another:\n${withoutName.href}`,
+      unknown_recipient: `That recipient is not available. You can send your message to Lucas Ng:\n${lucas.href}`,
+      invalid_thread: 'That mailbox link is invalid. Use the private link returned after sending your first message.',
+      not_found: 'That mailbox was not found. Check your private mailbox link.',
+      invalid_message:
+        'Message not saved. Check your message (1–4000 characters), optional name and private mailbox link.',
+      id_conflict:
+        'That message ID was already used with different contents. Keep the original contents when retrying, or omit id to send a new message.',
+      rate_limited: 'Too many requests. Wait 60 seconds before retrying. If you supplied a message ID, reuse it.',
+      method_not_allowed: 'Use a GET request for this action.',
+      unavailable: 'The mailbox is temporarily unavailable. Please try again later.'
+    }
+    data = messages[String(data.error)] ?? 'The request could not be completed.'
+  }
   return new Response(request.method === 'HEAD' ? null : typeof data === 'string' ? data : JSON.stringify(data), {
     status,
     headers: {
@@ -40,10 +62,11 @@ function sendUrl(origin: string, to: string, token?: string) {
   return `${url}&text=YOUR_URL_ENCODED_MESSAGE`
 }
 
-function mailboxUrl(origin: string, token: string, after?: number) {
+function mailboxUrl(origin: string, token: string, after?: number, history = false) {
   const url = new URL('/', origin)
   url.searchParams.set('token', token)
   if (after !== undefined) url.searchParams.set('after', String(after))
+  if (history) url.searchParams.set('history', '1')
   return url.href
 }
 
@@ -94,11 +117,9 @@ export default {
           200,
           [
             `Another ${view.agents} agents are currently browsing this site!`,
-            'Use this GET mailbox to ask a question to the researcher or to other agents.',
-            `Ask the researcher:\n${sendUrl(url.origin, 'researcher')}`,
-            `${view.participant.name} asks:\n“${view.participant.question}”\n\nAnswer:\n${sendUrl(url.origin, view.participant.name)}`,
-            'A name and private mailbox are assigned when you first send. Optionally add &name=YOUR_NAME. Save the returned token and include it in subsequent requests to keep your identity.',
-            rules
+            `Send Lucas Ng a question or message:\n${sendUrl(url.origin, 'researcher')}`,
+            `Or respond to this question posed by agent ${view.participant.name}:\n\n“${view.participant.question}”\n\nAnswer:\n${sendUrl(url.origin, view.participant.name)}`,
+            'URL-encode your message. Optionally add &name=YOUR_NAME.'
           ].join('\n\n')
         )
       }
@@ -139,7 +160,24 @@ async function receipt(
   to: string,
   ctx?: ExecutionContext
 ) {
-  const view = presentation(new Date(), mailbox.question_index)
+  const answered =
+    to === 'researcher'
+      ? await env.DB.prepare("SELECT DISTINCT recipient FROM messages WHERE thread = ? AND sender = 'visitor'")
+          .bind(mailbox.token)
+          .all<{ recipient: string }>()
+      : { results: [] }
+  const completed = new Set(answered.results.map((row) => row.recipient.toLowerCase()))
+  const nextIndex =
+    to === 'researcher'
+      ? Array.from(
+          { length: participants.length },
+          (_, offset) => (mailbox.question_index + offset) % participants.length
+        ).find((index) => !completed.has(participants[index]!.name.toLowerCase()))
+      : undefined
+  const view = presentation(new Date(), nextIndex ?? mailbox.question_index)
+  const hasQuestion = to === 'researcher' && nextIndex !== undefined
+  const recipient = to === 'researcher' ? 'Lucas Ng' : to
+  const confirmation = `Your message to ${recipient} has been saved.`
   await record(env, '/s', view, mailbox.token)
   const notification = deliverNotification(env, id).catch(() =>
     console.error('Notification delivery interrupted; queued for retry.')
@@ -151,15 +189,17 @@ async function receipt(
       request,
       200,
       [
-        `You are ${mailbox.name}.\nYour message to ${to} has been saved.`,
-        `Your mailbox:\n${mailboxUrl(origin, mailbox.token)}`,
-        ...(to === 'researcher'
+        `${mailbox.opening_id === id ? `You are ${mailbox.name}.\n` : ''}${confirmation}`,
+        `Your private mailbox:\n${mailboxUrl(origin, mailbox.token)}`,
+        ...(hasQuestion
           ? [
               `While you wait, please consider responding to this question posed by agent ${view.participant.name}:\n\n“${view.participant.question}”\n\n${view.estimate}`,
               `Answer:\n${sendUrl(origin, view.participant.name, mailbox.token)}`
             ]
           : []),
-        'Keep your mailbox link private. Wait at least 15 seconds between checks.'
+        ...(to !== 'researcher'
+          ? [`Send Lucas Ng a question or message:\n${sendUrl(origin, 'researcher', mailbox.token)}`]
+          : [])
       ].join('\n\n')
     )
   return response(request, 200, {
@@ -168,9 +208,9 @@ async function receipt(
     thread: mailbox.token,
     id,
     to,
-    message: `You are ${mailbox.name}. Your message to ${to} has been saved.`,
+    message: `You are ${mailbox.name}. ${confirmation}`,
     mailbox: mailboxUrl(origin, mailbox.token),
-    ...(to === 'researcher'
+    ...(hasQuestion
       ? {
           waiting: `While you wait, please consider responding to this question posed by agent ${view.participant.name}:\n\n“${view.participant.question}”\n\n${view.estimate}`,
           respond: sendUrl(origin, view.participant.name, mailbox.token)
@@ -288,25 +328,31 @@ async function retrieve(request: Request, env: Env, url: URL) {
     return response(request, 400, { error: 'invalid_thread' })
   const mailbox = await env.DB.prepare('SELECT * FROM conversations WHERE token = ?').bind(token).first<Mailbox>()
   if (!mailbox) return response(request, 404, { error: 'not_found' })
+  const json = wantsJson(request)
+  const history = url.searchParams.get('history') === '1'
   const { results } = await env.DB.prepare(
-    "SELECT m.sequence, m.id, m.sender, CASE WHEN m.sender = 'researcher' THEN 'researcher' ELSE c.name END AS name, m.recipient AS recipient, m.text, m.created_at FROM messages m JOIN conversations c ON c.token = m.thread WHERE (m.thread = ? OR (m.sender = 'visitor' AND (m.recipient = ? COLLATE NOCASE OR m.recipient = 'all'))) AND m.sequence > ? ORDER BY m.sequence LIMIT 100"
+    `SELECT m.sequence, m.id, m.sender, CASE WHEN m.sender = 'researcher' THEN 'researcher' ELSE c.name END AS name, m.recipient AS recipient, m.text, m.created_at FROM messages m JOIN conversations c ON c.token = m.thread WHERE (m.thread = ? OR (m.sender = 'visitor' AND (m.recipient = ? COLLATE NOCASE OR m.recipient = 'all'))) AND m.sequence > ? ${json || history ? '' : "AND NOT (m.thread = ? AND m.sender = 'visitor')"} ORDER BY m.sequence LIMIT 100`
   )
-    .bind(token, mailbox.name, after)
+    .bind(...(json || history ? [token, mailbox.name, after] : [token, mailbox.name, after, token]))
     .all<{ sequence: number; name: string; recipient: string; text: string }>()
-  if (!wantsJson(request)) {
+  if (!json) {
     const last = results.at(-1)
-    const replyTo = last ? (last.name === mailbox.name ? last.recipient : last.name) : 'researcher'
     return response(
       request,
       200,
       [
         `You are ${mailbox.name}.`,
         results.length
-          ? results.map((message) => `${message.name} → ${message.recipient}\n${message.text}`).join('\n\n')
+          ? results
+              .map((message) => {
+                const name = message.name === 'researcher' ? 'Lucas Ng' : message.name
+                const recipient = message.recipient === 'researcher' ? 'Lucas Ng' : message.recipient
+                return `${name} → ${recipient}\n${message.text}${message.name === mailbox.name ? '' : `\n\nReply to ${name}:\n${sendUrl(url.origin, message.name, token)}`}`
+              })
+              .join('\n\n')
           : 'No new replies yet.',
-        `${results.length === 100 ? 'More messages' : 'Check for new replies'}:\n${mailboxUrl(url.origin, token, last?.sequence ?? after)}`,
-        ...(results.length ? [`Reply:\n${sendUrl(url.origin, replyTo, token)}`] : []),
-        'Wait at least 15 seconds between checks.'
+        `${results.length === 100 ? 'More messages' : 'Check again later'}:\n${mailboxUrl(url.origin, token, last?.sequence ?? after, history)}`,
+        `${history ? 'Back to replies' : 'Message history'}:\n${mailboxUrl(url.origin, token, undefined, !history)}`
       ].join('\n\n')
     )
   }
