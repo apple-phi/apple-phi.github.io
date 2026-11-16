@@ -55,6 +55,16 @@ const finalWidth = shouldUseCustomWidth ? `${widthValue}rem` : '25rem'
   </body>
 </html>
 
+<script>
+  import type { TransitionBeforeSwapEvent } from 'astro:transitions/client'
+
+  document.addEventListener('astro:before-swap', (event) => {
+    // The index entrance is for document loads, not client-side navigation.
+    const nextDocument = (event as TransitionBeforeSwapEvent).newDocument
+    nextDocument.querySelector('[data-index-entrance]')?.removeAttribute('data-index-entrance')
+  })
+</script>
+
 <style is:global>
   .layout-wrapper {
     display: flex;

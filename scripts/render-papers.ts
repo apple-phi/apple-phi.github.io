@@ -226,14 +226,19 @@ for (const entry of entries) {
   }
   const titleBlock = header.outerHTML
   header.remove()
+  const abstract = body.querySelector('.manuscript-abstract > div')?.textContent.trim() ?? title
   papers.push({
     slug: entry.name,
     title,
-    description: body.querySelector('.manuscript-abstract > div')?.textContent.trim() ?? title,
+    description: header.getAttribute('data-description') ?? abstract,
+    abstract,
     html: body.innerHTML,
     header: titleBlock,
     bibtex,
     arxiv,
+    publication: { authors, venue, year, url },
+    conference: header.getAttribute('data-conference-url'),
+    poster: header.getAttribute('data-poster-url'),
     toc
   })
 }

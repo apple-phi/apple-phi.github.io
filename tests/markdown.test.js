@@ -5,6 +5,21 @@ import { parse } from 'node-html-parser'
 
 const renderer = await chiri().createRenderer({ syntaxHighlight: false })
 
+test('external links and PDFs open separately while site navigation and email stay unchanged', async () => {
+  const result = await renderer.render(
+    '[External](https://example.com/) [Protocol relative](//example.com/) ' +
+      '[Paper](/papers/compatible-likelihoods/) [Absolute internal](https://apple-phi.github.io/papers/) ' +
+      '[Section](#section) [Email](mailto:ln373@cantab.ac.uk) ' +
+      '[Poster](/papers/compatible-likelihoods/poster.pdf#page=1)'
+  )
+  const links = parse(result.code).querySelectorAll('a')
+  for (const link of links) {
+    const newTab = ['External', 'Protocol relative', 'Poster'].includes(link.text)
+    expect(link.getAttribute('target')).toBe(newTab ? '_blank' : undefined)
+    expect(link.getAttribute('rel')).toBe(newTab ? 'noopener' : undefined)
+  }
+})
+
 test('Chiri headings, duplicate IDs and reading metadata', async () => {
   const result = await renderer.render('# Title\n\n## Hello, *world*!\n\n## Hello, *world*!\n\n#### Omitted')
   expect(result.metadata.frontmatter.toc).toEqual([

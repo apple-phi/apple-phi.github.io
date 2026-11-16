@@ -1,0 +1,40 @@
+---
+import type { Paper } from './papers'
+import { themeConfig } from '../../src/config'
+
+interface Props {
+  paper: Paper
+}
+const { paper } = Astro.props
+const { authors, venue, year, url } = paper.publication
+const canonical = new URL(Astro.url.pathname, Astro.site).href
+const profile = themeConfig.site.website
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'ScholarlyArticle',
+  '@id': `${canonical}#article`,
+  url: canonical,
+  mainEntityOfPage: canonical,
+  headline: paper.title,
+  author: authors.map((name) => ({
+    '@type': 'Person',
+    name,
+    ...(name === themeConfig.site.author ? { '@id': `${profile}#person`, url: profile } : {})
+  })),
+  datePublished: year,
+  isPartOf: { '@type': 'CreativeWork', name: venue },
+  abstract: paper.abstract,
+  inLanguage: 'en',
+  isAccessibleForFree: true,
+  sameAs: [paper.arxiv, url, paper.conference].filter(Boolean)
+}
+const serializedSchema = JSON.stringify(schema).replace(/</g, '\\u003c')
+---
+
+<meta name="citation_title" content={paper.title} />
+{authors.map((author) => (
+  <meta name="citation_author" content={author} />
+))}
+<meta name="citation_publication_date" content={year} />
+<meta name="citation_conference_title" content={venue} />
+<script is:inline type="application/ld+json" set:html={serializedSchema} />

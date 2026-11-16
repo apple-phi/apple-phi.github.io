@@ -19,8 +19,11 @@ If the above date is >1M old:
 
 - `bun run dev` and `bun run build` reuse prepared manuscripts when their inputs are unchanged.
 - `bun test` validates existing build output; use `bun run build` first for fresh output. Tests do not launch renderers or browsers.
-- `bun run typecheck` runs Astro's checker, which also checks the project's TypeScript files.
-- `bun run check` performs full local validation. Native lint requires canary; CI uses stable Bun for type-checking, building, and testing.
+- Use native Bun tools locally: `bun lint`, `bun fmt`, `bun check`, and `bun test`.
+- `bun run format` and `bun run format:check` use Bun's formatter. It reads `.prettierrc` and `.prettierignore`, formats supported files natively, and delegates only `.astro` files to the installed Prettier/Astro plugin. Keep those dependencies for that fallback; do not invoke Prettier directly.
+- During iteration, format/check only changed files: `bun fmt --check <files>` and `bun check <typescript-files>`. Native `bun check` does not replace Astro template checking.
+- `bun run typecheck` runs Astro's checker, which also checks the project's TypeScript files. Use it for Astro template or interface changes and full validation, rather than every content or style adjustment.
+- `bun run validate` performs full local validation before deployment. There is deliberately no `check` script, so `bun check` invokes the native type checker. Native lint requires canary; CI uses stable Bun for type-checking, building, and testing.
 - Force manuscript regeneration with `bun scripts/render-papers.ts --force`.
 - Match browser verification to the change. Do not repeat equation audits for unrelated UI edits or accumulate diagnostic scripts and screenshots in the workspace; use temporary files and remove them when finished.
 

@@ -1,14 +1,29 @@
 ---
+import { linkAttributes } from '../links'
 interface Props {
   bibtex: string
   arxiv: string
+  conference?: string
+  poster?: string
 }
-const { bibtex, arxiv } = Astro.props
+const { bibtex, arxiv, conference, poster } = Astro.props
 ---
 
 <div class="manuscript-citation">
   <div class="manuscript-actions">
-    <a href={arxiv}>[arXiv]</a>
+    {conference && (
+      <a href={conference} {...linkAttributes(conference)}>
+        [neurips.cc]
+      </a>
+    )}
+    <a href={arxiv} {...linkAttributes(arxiv)}>
+      [arXiv]
+    </a>
+    {poster && (
+      <a href={poster} {...linkAttributes(poster)}>
+        [poster]
+      </a>
+    )}
     <button type="button" class="citation-toggle" aria-haspopup="dialog">
       [BibTeX]
     </button>
@@ -128,6 +143,7 @@ const { bibtex, arxiv } = Astro.props
 <style>
   .manuscript-actions {
     display: flex;
+    flex-wrap: wrap;
     align-items: baseline;
     gap: 0.75rem;
     margin-top: 0.75rem;

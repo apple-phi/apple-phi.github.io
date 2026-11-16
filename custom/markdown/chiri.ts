@@ -2,6 +2,7 @@ import { satteri } from '@astrojs/markdown-satteri'
 import { createRequire } from 'node:module'
 import type { HastPluginEntry, MdastPluginEntry, MdastVisitorContext, MdastNode } from 'satteri'
 import type { Element, RootContent } from 'hast'
+import { linkAttributes } from '../links'
 
 type Context = Pick<MdastVisitorContext, 'data'>
 
@@ -216,5 +217,19 @@ export const chiri = () =>
   satteri({
     features: { directive: true, math: true, rawHtml: true },
     mdastPlugins: [metadata],
-    hastPlugins: [imageAttributes, markup]
+    hastPlugins: [imageAttributes, markup, links]
   })
+
+const links: HastPluginEntry = {
+  name: 'site-link-targets',
+  element: {
+    filter: ['a'],
+    visit(node, ctx) {
+      if (typeof node.properties.href !== 'string') return
+      const attributes = linkAttributes(node.properties.href)
+      if (!attributes.target) return
+      ctx.setProperty(node, 'target', attributes.target)
+      ctx.setProperty(node, 'rel', [...new Set([...classes(node.properties.rel), 'noopener'])])
+    }
+  }
+}

@@ -6,10 +6,19 @@ export interface Paper {
   slug: string
   title: string
   description: string
+  abstract: string
   html: string
   header: string
   bibtex: string
   arxiv: string
+  publication: {
+    authors: string[]
+    venue: string
+    year: string
+    url: string
+  }
+  conference?: string
+  poster?: string
   toc: TOCItem[]
 }
 

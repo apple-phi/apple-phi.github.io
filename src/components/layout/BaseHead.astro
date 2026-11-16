@@ -46,8 +46,9 @@ const imageUrl = ogImage ? new URL(ogImage, Astro.url) : undefined
 {imageUrl && <meta property="og:image" content={imageUrl} />}
 
 <!-- Twitter -->
-<meta property="twitter:card" content="summary_large_image" />
+<meta property="twitter:card" content={imageUrl ? 'summary_large_image' : 'summary'} />
 <meta property="twitter:url" content={Astro.url} />
 <meta property="twitter:title" content={title} />
 <meta property="twitter:description" content={description} />
 {imageUrl && <meta property="twitter:image" content={imageUrl} />}
+<slot />

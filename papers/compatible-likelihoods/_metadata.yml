@@ -3,11 +3,14 @@
 # Refresh index.qmd, refs.bib, and figures/ together after rebuilding upstream.
 # Presentation is defined by custom/manuscript/ and the site's Astro layout.
 publication:
+  description: We derive compatibility conditions for flow matching on Riemannian manifolds and propose a loss that is both compatible and supports only feasible velocities.
   key: ng2026compatible
   venue: The Fortieth Annual Conference on Neural Information Processing Systems
   year: 2026
   url: https://openreview.net/forum?id=jJsQucS0Fg
   arxiv: https://arxiv.org/abs/2610.31981
+  conference: https://neurips.cc/virtual/2026/poster/150283
+  poster: /papers/compatible-likelihoods/poster.pdf
   affiliation:
     name: Devotion AI Labs
     url: https://devotionlabs.ai/

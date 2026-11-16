@@ -81,11 +81,40 @@ for (const paper of JSON.parse(readFileSync(preparedPath, 'utf8'))) {
       for (const citation of content.querySelectorAll('.citation')) {
         assert(citation.querySelector('a[href^="#ref-"]'), `Unlinked citation: ${citation.text}`)
       }
-      assert.equal(page.querySelector('.manuscript-actions > a')?.getAttribute('href'), paper.arxiv)
+      assert(page.querySelectorAll('.manuscript-actions > a').some((link) => link.getAttribute('href') === paper.arxiv))
       const citation = page.querySelector('.citation-content pre')
       assert(citation, 'Missing BibTeX entry')
       // node-html-parser treats <pre> as raw text, unlike the browser DOM.
       assert.equal(parse(citation.innerHTML).querySelector('code')?.text, paper.bibtex)
+      const head = page.querySelector('head')
+      const meta = (name) => head.querySelector(`meta[name="${name}"]`)?.getAttribute('content')
+      const authors = original.querySelectorAll('meta[name="author"]').map((node) => node.getAttribute('content'))
+      assert.equal(meta('citation_title'), paper.title)
+      assert.deepEqual(
+        head.querySelectorAll('meta[name="citation_author"]').map((node) => node.getAttribute('content')),
+        authors
+      )
+      assert.equal(meta('citation_publication_date'), paper.publication.year)
+      assert.equal(meta('citation_conference_title'), paper.publication.venue)
+      assert.equal(meta('description'), paper.description)
+      assert.equal(head.querySelector('meta[property="og:description"]').getAttribute('content'), paper.description)
+      assert.equal(
+        head.querySelector('meta[property="twitter:description"]').getAttribute('content'),
+        paper.description
+      )
+      assert(!head.querySelector('meta[name="citation_pdf_url"]'), 'Do not identify the poster as the full paper')
+      const schema = JSON.parse(head.querySelector('script[type="application/ld+json"]').text)
+      assert.equal(schema['@type'], 'ScholarlyArticle')
+      assert.equal(schema.headline, paper.title)
+      assert.equal(schema.abstract, original.querySelector('.manuscript-abstract > div').textContent.trim())
+      assert.deepEqual(
+        schema.author.map((author) => author.name),
+        authors
+      )
+      assert.equal(schema.datePublished, paper.publication.year)
+      assert.equal(schema.isPartOf.name, paper.publication.venue)
+      assert(schema.sameAs.includes(paper.arxiv) && schema.sameAs.includes(paper.publication.url))
+      assert.equal(schema.url, page.querySelector('link[rel="canonical"]').getAttribute('href'))
       const affiliationUrl = original.querySelector('#title-block-header')?.getAttribute('data-affiliation-url')
       if (affiliationUrl)
         assert.equal(article.querySelector('a.manuscript-affiliation-name')?.getAttribute('href'), affiliationUrl)

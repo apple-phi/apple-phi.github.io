@@ -1,4 +1,5 @@
 ---
+import { linkAttributes } from '../../../custom/links'
 interface Props {
   title: string
   authors: string[]
@@ -12,7 +13,7 @@ const { title, authors, venue, arxiv, projectPage } = Astro.props
 
 <article class="publication">
   <h3>
-    <a class="publication-link" href={arxiv}>
+    <a class="publication-link" href={arxiv} {...linkAttributes(arxiv)}>
       {title}
     </a>
   </h3>
@@ -26,7 +27,11 @@ const { title, authors, venue, arxiv, projectPage } = Astro.props
   </p>
   <p class="metadata">
     <em class="venue">{venue}</em>
-    {projectPage && <a href={projectPage}>[paper page]</a>}
+    {projectPage && (
+      <a href={projectPage} {...linkAttributes(projectPage)}>
+        [paper page]
+      </a>
+    )}
   </p>
 </article>
 

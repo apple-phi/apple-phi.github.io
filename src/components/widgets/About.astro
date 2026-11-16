@@ -18,4 +18,10 @@ const { Content } = hasContent && aboutEntry ? await render(aboutEntry) : { Cont
   .about:not(:empty) {
     margin-bottom: 1.25rem;
   }
+
+  @media (max-width: 768px) {
+    .about :global(h2) {
+      margin-top: 2.75em;
+    }
+  }
 </style>

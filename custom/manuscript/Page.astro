@@ -11,6 +11,8 @@ import '../../styles/manuscript.css'
 import { readPapers, type Paper } from './papers'
 import Citation from './Citation.astro'
 import ReferencePreviews from './ReferencePreviews.astro'
+import { linkAttributes } from '../links'
+import Metadata from './Metadata.astro'
 
 export function getStaticPaths() {
   return readPapers().map((paper) => ({ params: { paper: paper.slug }, props: { paper } }))
@@ -27,6 +29,17 @@ const assets = import.meta.glob<string>('../../papers/*/figures/*', {
   import: 'default'
 })
 const content = parse(paper.html)
+const header = parse(paper.header)
+for (const root of [content, header]) {
+  for (const link of root.querySelectorAll('a[href]')) {
+    const attributes = linkAttributes(link.getAttribute('href')!)
+    if (!attributes.target) continue
+    link.setAttribute('target', attributes.target)
+    const rel = new Set((link.getAttribute('rel') ?? '').split(/\s+/).filter(Boolean))
+    rel.add('noopener')
+    link.setAttribute('rel', [...rel].join(' '))
+  }
+}
 for (const image of content.querySelectorAll('img[src]')) {
   const source = image.getAttribute('src')!
   const url = assets[`../../papers/${paper.slug}/${source}`]
@@ -38,14 +51,16 @@ for (const image of content.querySelectorAll('img[src]')) {
 ---
 
 <BaseLayout type="post">
-  <BaseHead title={`${paper.title} · ${themeConfig.site.title}`} description={paper.description} slot="head" />
+  <BaseHead title={`${paper.title} · ${themeConfig.site.title}`} description={paper.description} slot="head">
+    <Metadata paper={paper} />
+  </BaseHead>
   <main class="manuscript-page">
     <BackButton />
     {themeConfig.post.toc && <TableOfContents toc={paper.toc} />}
     <article class="manuscript">
       <div class="manuscript-header">
-        <Fragment set:html={paper.header} />
-        <Citation bibtex={paper.bibtex} arxiv={paper.arxiv} />
+        <Fragment set:html={header.innerHTML} />
+        <Citation bibtex={paper.bibtex} arxiv={paper.arxiv} conference={paper.conference} poster={paper.poster} />
       </div>
       <Fragment set:html={content.innerHTML} />
     </article>
