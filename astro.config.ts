@@ -9,6 +9,8 @@ import path from 'path'
 export default defineConfig({
   site: themeConfig.site.website,
   compressHTML: true,
+  prefetch: { prefetchAll: true, defaultStrategy: 'hover' },
+  experimental: { clientPrerender: true },
   image: {
     service: {
       entrypoint: 'astro/assets/services/sharp',

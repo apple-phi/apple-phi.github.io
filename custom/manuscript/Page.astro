@@ -35,6 +35,7 @@ for (const root of [content, header]) {
     const attributes = linkAttributes(link.getAttribute('href')!)
     if (!attributes.target) continue
     link.setAttribute('target', attributes.target)
+    link.setAttribute('data-astro-prefetch', 'false')
     const rel = new Set((link.getAttribute('rel') ?? '').split(/\s+/).filter(Boolean))
     rel.add('noopener')
     link.setAttribute('rel', [...rel].join(' '))

@@ -229,6 +229,7 @@ const links: HastPluginEntry = {
       const attributes = linkAttributes(node.properties.href)
       if (!attributes.target) return
       ctx.setProperty(node, 'target', attributes.target)
+      ctx.setProperty(node, 'data-astro-prefetch', 'false')
       ctx.setProperty(node, 'rel', [...new Set([...classes(node.properties.rel), 'noopener'])])
     }
   }

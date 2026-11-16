@@ -6,7 +6,9 @@ import ThemeToggle from '@/components/ui/ThemeToggle.astro'
 <header>
   <nav>
     <h1>
-      <a href="/">{themeConfig.site.title}</a>
+      <a href="/" data-page-reload>
+        {themeConfig.site.title}
+      </a>
     </h1>
     {themeConfig.general.themeToggle && <ThemeToggle />}
   </nav>

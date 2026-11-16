@@ -1,0 +1,83 @@
+<!-- Classify arrival before first paint, independently of any page's markup. -->
+<script is:inline>
+  ;(() => {
+    const navigation = performance.getEntriesByType('navigation')[0]
+    let internalArrival = false
+    try {
+      internalArrival = !!document.referrer && new URL(document.referrer).origin === location.origin
+    } catch {
+      // An absent or malformed referrer is treated as an external entry.
+    }
+    const pageEntry = navigation?.type === 'reload' || (navigation?.type !== 'back_forward' && !internalArrival)
+    document.documentElement.toggleAttribute('data-page-entry', pageEntry)
+
+    // Restored and prerendered documents may have an older stored theme.
+    const syncTheme = () => {
+      const manager = window.ThemeManager
+      const theme = manager?.getEffectiveTheme()
+      if (theme && !document.documentElement.classList.contains(theme)) manager.applyTheme(theme)
+    }
+    window.addEventListener('pagereveal', syncTheme)
+    window.addEventListener('pageshow', syncTheme)
+
+    // Native navigation does not emit Astro router events. Preserve Chiri's
+    // initialization contract after deferred component scripts have registered.
+    document.addEventListener(
+      'DOMContentLoaded',
+      () => {
+        document.dispatchEvent(new Event('astro:page-load'))
+      },
+      { once: true }
+    )
+  })()
+</script>
+
+<script>
+  import { prefetch } from 'astro:prefetch'
+
+  document.addEventListener('click', (event) => {
+    if (
+      event.defaultPrevented ||
+      event.button !== 0 ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.shiftKey ||
+      event.altKey
+    )
+      return
+    const link = event.target instanceof Element ? event.target.closest<HTMLAnchorElement>('a[data-page-reload]') : null
+    if (
+      !link ||
+      link.target ||
+      link.origin !== location.origin ||
+      link.pathname !== location.pathname ||
+      link.search !== location.search
+    )
+      return
+    event.preventDefault()
+    location.reload()
+  })
+
+  async function prepareIdleLinks() {
+    const links = document.querySelectorAll<HTMLAnchorElement>('a[data-prefetch-idle]')
+    if (!links.length) return
+    const entrance = document.querySelector('[data-page-entrance]')
+    const animations = entrance?.getAnimations({ subtree: true }) ?? []
+    await Promise.allSettled(
+      animations
+        .filter((animation) => animation.effect?.getTiming().iterations !== Infinity)
+        .map((animation) => animation.finished)
+    )
+    const run = () => {
+      if (document.visibilityState !== 'visible') return
+      for (const url of new Set([...links].map((link) => link.href))) {
+        prefetch(url, { eagerness: 'immediate' })
+      }
+    }
+    if ('requestIdleCallback' in window) window.requestIdleCallback(run, { timeout: 2000 })
+    else run()
+  }
+
+  if (document.readyState === 'complete') void prepareIdleLinks()
+  else window.addEventListener('load', () => void prepareIdleLinks(), { once: true })
+</script>

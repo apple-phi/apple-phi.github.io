@@ -1,9 +1,10 @@
 ---
 import { themeConfig } from '@/config'
-import { ClientRouter } from 'astro:transitions'
 import ThemeManager from '@/components/ui/ThemeManager.astro'
 import TransitionWrapper from '@/components/layout/TransitionWrapper.astro'
 import type { LayoutProps } from '@/types'
+import transitionStyles from '../../styles/transitions.css?url'
+import Navigation from '../../custom/navigation/Navigation.astro'
 
 type Props = LayoutProps
 
@@ -18,8 +19,19 @@ const finalWidth = shouldUseCustomWidth ? `${widthValue}rem` : '25rem'
 
 <html lang={language}>
   <head>
+    {fadeAnimation && <style is:inline>
+      @view-transition {
+        navigation: auto;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        @view-transition {
+          navigation: none;
+        }
+      }
+    </style>}
     <ThemeManager />
-    {fadeAnimation && <ClientRouter />}
+    <Navigation />
+    {fadeAnimation && <link rel="stylesheet" href={transitionStyles} />}
     <slot name="head" />
   </head>
   <body
@@ -38,32 +50,8 @@ const finalWidth = shouldUseCustomWidth ? `${widthValue}rem` : '25rem'
         <slot />
       </div>
     )}
-
-    <script is:inline define:vars={{ fadeAnimation }}>
-      if (!fadeAnimation) {
-        const dispatchPageLoad = () => {
-          document.dispatchEvent(new Event('astro:page-load'))
-        }
-
-        if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', dispatchPageLoad, { once: true })
-        } else {
-          queueMicrotask(dispatchPageLoad)
-        }
-      }
-    </script>
   </body>
 </html>
-
-<script>
-  import type { TransitionBeforeSwapEvent } from 'astro:transitions/client'
-
-  document.addEventListener('astro:before-swap', (event) => {
-    // The index entrance is for document loads, not client-side navigation.
-    const nextDocument = (event as TransitionBeforeSwapEvent).newDocument
-    nextDocument.querySelector('[data-index-entrance]')?.removeAttribute('data-index-entrance')
-  })
-</script>
 
 <style is:global>
   .layout-wrapper {

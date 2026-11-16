@@ -12,7 +12,7 @@ const { title, description, entrance = false } = Astro.props
 
 <BaseLayout title={title} description={description} type="page">
   <BaseHead title={title} description={description} slot="head" />
-  <div class="page-content" data-index-entrance={entrance || undefined}>
+  <div class="page-content" data-page-entrance={entrance || undefined}>
     <GradientMask />
     <div data-index-step="0">
       <slot name="header">
@@ -42,7 +42,7 @@ const { title, description, entrance = false } = Astro.props
   }
 
   @media (prefers-reduced-motion: no-preference) {
-    [data-index-entrance] [data-index-step] {
+    html[data-page-entry] [data-page-entrance] [data-index-step] {
       animation: index-enter 600ms ease both;
       animation-delay: calc(var(--index-step, 0) * 120ms);
     }

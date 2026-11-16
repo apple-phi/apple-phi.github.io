@@ -17,6 +17,7 @@ test('external links and PDFs open separately while site navigation and email st
     const newTab = ['External', 'Protocol relative', 'Poster'].includes(link.text)
     expect(link.getAttribute('target')).toBe(newTab ? '_blank' : undefined)
     expect(link.getAttribute('rel')).toBe(newTab ? 'noopener' : undefined)
+    expect(link.getAttribute('data-astro-prefetch')).toBe(newTab ? 'false' : undefined)
   }
 })
 

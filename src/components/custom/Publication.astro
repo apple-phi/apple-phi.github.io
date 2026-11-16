@@ -6,9 +6,10 @@ interface Props {
   venue: string
   arxiv: string
   projectPage?: string
+  prefetch?: boolean
 }
 
-const { title, authors, venue, arxiv, projectPage } = Astro.props
+const { title, authors, venue, arxiv, projectPage, prefetch = false } = Astro.props
 ---
 
 <article class="publication">
@@ -28,7 +29,7 @@ const { title, authors, venue, arxiv, projectPage } = Astro.props
   <p class="metadata">
     <em class="venue">{venue}</em>
     {projectPage && (
-      <a href={projectPage} {...linkAttributes(projectPage)}>
+      <a href={projectPage} {...linkAttributes(projectPage)} data-prefetch-idle={prefetch || undefined}>
         [paper page]
       </a>
     )}

@@ -33,3 +33,11 @@ If the above date is >1M old:
 - Optional plugin dependencies load through `createRequire`: config-loaded plugin closures outlive Vite's config module runner, so ordinary dynamic imports can fail during a build.
 - The Astro Vite environment externalizes the published `astro` package to reduce content-config loading overhead. Keep this scoped to that environment; collection references and image schemas must continue to work.
 - `tests/markdown.test.js` exercises Markdown/MDX compatibility without building or launching a browser.
+
+## Navigation
+
+- Shared `BaseLayout` uses native document navigation and the shared `styles/transitions.css`; do not add `ClientRouter` or per-link `data-astro-reload` workarounds.
+- `custom/navigation/Navigation.astro` emits `astro:page-load` once after each document's deferred scripts load, preserving Chiri widget initialization. The browser handles document and history lifecycle normally.
+- The same shared component classifies initial entry/reload versus internal/history arrival before paint. Index entrance animations run only for initial entry and reload; the title explicitly reloads the index.
+- Astro prepares internal destinations on hover. Use `data-prefetch-idle` on a high-value link to prepare it after any `[data-page-entrance]` animations finish and the browser becomes idle; `Publication` exposes this as its optional `prefetch` prop. Keep destination paths in content, not in navigation code.
+- External and PDF links opt out of prefetching through `custom/links.ts`. Browser prerendering is an enhancement; data-saving settings and unsupported browsers must retain ordinary navigation.
