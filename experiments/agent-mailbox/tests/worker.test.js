@@ -145,7 +145,7 @@ test('rate limits use separate client-IP counters and reject before any database
       }
     }
   }
-  for (const path of ['/s', '/t']) {
+  for (const path of ['/s', '/t', '/?to=researcher&text=test']) {
     const response = await worker.fetch(
       new Request(`https://mail.example${path}`, { headers: { 'CF-Connecting-IP': '192.0.2.1' } }),
       env
@@ -157,11 +157,32 @@ test('rate limits use separate client-IP counters and reject before any database
   }
   expect(calls).toEqual([
     ['submit', '192.0.2.1'],
-    ['poll', '192.0.2.1']
+    ['poll', '192.0.2.1'],
+    ['submit', '192.0.2.1']
   ])
   const head = await worker.fetch(new Request('https://mail.example/t', { method: 'HEAD' }), env)
   expect(head.status).toBe(429)
   expect(await head.text()).toBe('')
+})
+
+test('root query submissions behave like /s, including retry deduplication and HEAD safety', async () => {
+  const { database, call } = await mailbox()
+  try {
+    const input = { id: crypto.randomUUID(), to: 'researcher', text: 'test' }
+    expect((await call('/', input, 'HEAD')).status).toBe(405)
+    expect(database.query('SELECT COUNT(*) AS n FROM messages').get().n).toBe(0)
+    const sent = await call('/', input)
+    expect(sent.status).toBe(200)
+    const receipt = await sent.json()
+    expect(receipt.message).toContain('has been saved')
+    expect(await (await call('/s', input)).json()).toEqual(receipt)
+    expect(database.query('SELECT COUNT(*) AS n FROM messages').get().n).toBe(1)
+    expect((await (await call('/t', { token: receipt.token })).json()).messages[0].text).toBe('test')
+    expect((await call('/', { to: 'researcher', text: '' })).status).toBe(400)
+    expect((await call('/')).headers.get('Content-Type')).toContain('text/plain')
+  } finally {
+    database.close()
+  }
 })
 
 test('limiter failures fail closed without leaking details or accessing the database', async () => {

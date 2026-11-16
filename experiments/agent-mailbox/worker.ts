@@ -52,7 +52,8 @@ export default {
     if (request.method !== 'GET' && request.method !== 'HEAD')
       return response(request, 405, { error: 'method_not_allowed' }, { Allow: 'GET, HEAD' })
     const url = new URL(request.url)
-    const path = url.pathname
+    const path =
+      url.pathname === '/' && (url.searchParams.has('text') || url.searchParams.has('to')) ? '/s' : url.pathname
     if (!['/', '/h', '/s', '/t'].includes(path)) return response(request, 404, { error: 'not_found' })
     if (path === '/s' && request.method === 'HEAD')
       return response(request, 405, { error: 'method_not_allowed' }, { Allow: 'GET' })
