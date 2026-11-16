@@ -1,0 +1,73 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "mail",
+  "account_id": "fd3f1e5510c2d8e1ca06a241e5e781bc",
+  "main": "worker.ts",
+  "compatibility_date": "2026-11-16",
+  "workers_dev": true,
+  "preview_urls": false,
+  "observability": {
+    "enabled": true,
+    "logs": {
+      "enabled": true,
+      "invocation_logs": false
+    }
+  },
+  "env": {
+    "development": {
+      "name": "mail-dev",
+      "ratelimits": [
+        {
+          "name": "SUBMISSIONS",
+          "namespace_id": "37301",
+          "simple": {
+            "limit": 10,
+            "period": 60
+          }
+        },
+        {
+          "name": "POLLING",
+          "namespace_id": "37302",
+          "simple": {
+            "limit": 30,
+            "period": 60
+          }
+        }
+      ],
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "mail-dev-store"
+        }
+      ]
+    },
+    "production": {
+      "name": "mail",
+      "ratelimits": [
+        {
+          "name": "SUBMISSIONS",
+          "namespace_id": "37303",
+          "simple": {
+            "limit": 10,
+            "period": 60
+          }
+        },
+        {
+          "name": "POLLING",
+          "namespace_id": "37304",
+          "simple": {
+            "limit": 30,
+            "period": 60
+          }
+        }
+      ],
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "mail-store",
+          "database_id": "6d6df02a-762d-4c38-ad7e-3202a4730935"
+        }
+      ]
+    }
+  }
+}

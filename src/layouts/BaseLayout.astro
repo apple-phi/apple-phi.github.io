@@ -5,6 +5,7 @@ import TransitionWrapper from '@/components/layout/TransitionWrapper.astro'
 import type { LayoutProps } from '@/types'
 import transitionStyles from '../../styles/transitions.css?url'
 import Navigation from '../../custom/navigation/Navigation.astro'
+import Discovery from '../../experiments/agent-mailbox/Discovery.astro'
 
 type Props = LayoutProps
 
@@ -41,6 +42,7 @@ const finalWidth = shouldUseCustomWidth ? `${widthValue}rem` : '25rem'
       ${shouldUseCustomWidth ? `--content-width: ${widthValue}rem;` : ''}
     `}
   >
+    <Discovery />
     {fadeAnimation ? (
       <TransitionWrapper type={type} class="layout-wrapper">
         <slot />

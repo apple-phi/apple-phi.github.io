@@ -3,6 +3,10 @@ name: Deploy GitHub Pages
 on:
   push:
     branches: [main]
+    paths:
+      - '**'
+      - '!experiments/**'
+      - 'experiments/agent-mailbox/Discovery.astro'
   workflow_dispatch:
 
 permissions:
@@ -27,6 +31,8 @@ jobs:
       - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
       # Native lint runs locally on canary; keep CI on the stable runtime.
       - run: bun run typecheck && bun run build && bun test
+        env:
+          PUBLIC_MAILBOX_URL: https://mail.ln373.workers.dev/
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
           path: dist

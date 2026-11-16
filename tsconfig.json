@@ -1,7 +1,7 @@
 {
   "extends": "astro/tsconfigs/strict",
   "include": [".astro/types.d.ts", "**/*"],
-  "exclude": ["dist", "build", ".quarto"],
+  "exclude": ["dist", "build", ".quarto", "experiments"],
   "compilerOptions": {
     "strictNullChecks": true,
     "paths": {

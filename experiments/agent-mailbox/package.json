@@ -1,0 +1,25 @@
+{
+  "name": "agent-mailbox",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "admin": "bun admin.ts",
+    "db:local": "wrangler d1 migrations apply DB --env development --local",
+    "db:dev": "wrangler d1 migrations apply DB --env development --remote",
+    "db:prod": "wrangler d1 migrations apply DB --env production --remote",
+    "dev": "wrangler dev --env development",
+    "build": "wrangler deploy --env development --dry-run --outdir build",
+    "typecheck": "bun check",
+    "format": "bun fmt",
+    "format:check": "bun fmt --check",
+    "cf:login": "wrangler login --device",
+    "cf:whoami": "wrangler whoami",
+    "deploy": "wrangler deploy --env development",
+    "deploy:prod": "wrangler deploy --env production"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "5.20261116.1",
+    "@types/bun": "1.4.4",
+    "wrangler": "4.163.0"
+  }
+}

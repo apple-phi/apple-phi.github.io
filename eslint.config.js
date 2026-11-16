@@ -17,7 +17,7 @@ export default [
   },
   {
     rules: {
-      // Formatting is handled separately by Prettier.
+      // Formatting is handled separately by bun fmt.
       'no-unexpected-multiline': 'off',
       'no-console': ['warn', { allow: ['warn', 'error'] }],
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
@@ -37,7 +37,8 @@ export default [
       '.cache/**',
       '.astro/**',
       '.DS_Store',
-      'coverage/**'
+      'coverage/**',
+      'experiments/**'
     ]
   }
 ]
