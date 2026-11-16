@@ -35,27 +35,21 @@ if (operation === 'inbox') {
     'Use inbox, thread --thread TOKEN, or reply --thread TOKEN --text TEXT [--id UUID] [--env development|production] [--local]'
   )
 }
-const path = new URL(`./build/admin-${crypto.randomUUID()}.sql`, import.meta.url)
-try {
-  await Bun.write(path, sql)
-  const process = Bun.spawn(
-    [
-      'bunx',
-      '--no-install',
-      'wrangler',
-      'd1',
-      'execute',
-      'DB',
-      '--env',
-      environment,
-      options.has('--local') ? '--local' : '--remote',
-      '--file',
-      Bun.fileURLToPath(path),
-      '--json'
-    ],
-    { cwd: import.meta.dir, stdout: 'inherit', stderr: 'inherit' }
-  )
-  if ((await process.exited) !== 0) throw new Error('Database command failed')
-} finally {
-  await Bun.file(path).delete()
-}
+const command = Bun.spawn(
+  [
+    'bunx',
+    '--no-install',
+    'wrangler',
+    'd1',
+    'execute',
+    'DB',
+    '--env',
+    environment,
+    options.has('--local') ? '--local' : '--remote',
+    '--command',
+    sql,
+    '--json'
+  ],
+  { cwd: import.meta.dir, stdout: 'inherit', stderr: 'inherit' }
+)
+if ((await command.exited) !== 0) throw new Error('Database command failed')
