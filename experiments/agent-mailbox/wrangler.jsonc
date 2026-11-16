@@ -43,6 +43,12 @@
     },
     "production": {
       "name": "mail",
+      "vars": {
+        "APP_ENV": "production",
+        "NOTIFY_TO": "ln373@cantab.ac.uk",
+        "RESEND_TEMPLATE_ID": "agent-mailbox-notification"
+      },
+      "triggers": { "crons": ["*/5 * * * *"] },
       "ratelimits": [
         {
           "name": "SUBMISSIONS",

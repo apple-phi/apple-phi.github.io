@@ -1,8 +1,9 @@
-import { test, expect } from 'bun:test'
+import { test, expect, spyOn } from 'bun:test'
 import { Database } from 'bun:sqlite'
 import worker from '../worker'
 import { presentation, participants } from '../presentation'
 import { generateName, generateToken, tokenPattern } from '../identity'
+import { deliverNotification, notificationVariables } from '../notifications'
 
 test('health checks the database binding without writing and returns uncached JSON', async () => {
   let sql
@@ -55,6 +56,7 @@ async function mailbox() {
   database.exec('PRAGMA foreign_keys = ON')
   database.exec(await Bun.file(new URL('../migrations/0001_mailbox.sql', import.meta.url)).text())
   database.exec(await Bun.file(new URL('../migrations/0002_participants.sql', import.meta.url)).text())
+  database.exec(await Bun.file(new URL('../migrations/0003_notifications.sql', import.meta.url)).text())
   function prepare(sql) {
     let values = []
     return {
@@ -88,8 +90,11 @@ async function mailbox() {
     }
   }
   const call = (path, params = {}, method = 'GET') =>
-    worker.fetch(new Request(`https://mail.example${path}?${new URLSearchParams(params)}`, { method }), env)
-  return { database, call }
+    worker.fetch(
+      new Request(`https://mail.example${path}?${new URLSearchParams({ format: 'json', ...params })}`, { method }),
+      env
+    )
+  return { database, call, env }
 }
 
 test('real SQL supports opening, retrying, continuing, researcher replies and cursor retrieval', async () => {
@@ -121,6 +126,227 @@ test('real SQL supports opening, retrying, continuing, researcher replies and cu
     expect((await call('/s', { ...continuation, thread: other.thread })).status).toBe(409)
     expect((await (await call('/t', { thread: other.thread })).json()).messages).toHaveLength(1)
   } finally {
+    database.close()
+  }
+})
+
+test('the default root interface is concise plain text with working mailbox and answer links', async () => {
+  const { database, call } = await mailbox()
+  try {
+    const first = await call('/', { text: 'Interface check', format: 'text' })
+    expect(first.headers.get('Content-Type')).toContain('text/plain')
+    const body = await first.text()
+    expect(body).toContain('Your message to researcher has been saved.')
+    expect(body).not.toContain('"thread":')
+    expect(body).not.toContain('unique UUID')
+    const links = body.match(/https:\/\/mail\.example\/\?[^\s]+/g)
+    expect(links).toHaveLength(2)
+    const inbox = new URL(links[0])
+    const request = await call('/', { token: inbox.searchParams.get('token'), format: 'text' })
+    const conversation = await request.text()
+    expect(conversation).toContain('Interface check')
+    expect(conversation).toContain('Reply:')
+    expect(conversation).not.toContain('"next":')
+    const cursor = await call('/', { token: inbox.searchParams.get('token'), after: '999', format: 'text' })
+    expect(await cursor.text()).toContain('No new replies yet.')
+  } finally {
+    database.close()
+  }
+})
+
+test('notifications cover every visitor recipient, deduplicate retries and exclude researcher replies', async () => {
+  const { database, call, env } = await mailbox()
+  try {
+    const id = crypto.randomUUID()
+    const first = await (await call('/s', { id, text: 'Email me' })).json()
+    await call('/s', { id, text: 'Email me' })
+    await call('/s', { token: first.token, to: participants[0].name, text: 'Agent response' })
+    await call('/s', { token: first.token, to: 'all', text: 'Public message' })
+    database
+      .query("INSERT INTO messages (id,thread,sender,text) VALUES (?,?,'researcher','Reply')")
+      .run(crypto.randomUUID(), first.token)
+    expect(database.query('SELECT COUNT(*) AS n FROM notifications').get().n).toBe(3)
+    const enabled = {
+      ...env,
+      RESEND_API_KEY: 'test-key',
+      RESEND_TEMPLATE_ID: 'agent-mailbox-notification',
+      NOTIFY_TO: 'ln373@cantab.ac.uk',
+      APP_ENV: 'production'
+    }
+    const sent = []
+    const client = {
+      emails: {
+        async send(payload, options) {
+          sent.push({ payload, options })
+          return { data: { id: 'provider-email-id' }, error: null, headers: {} }
+        }
+      }
+    }
+    await Promise.all([deliverNotification(enabled, id, 1000, client), deliverNotification(enabled, id, 1000, client)])
+    await deliverNotification(enabled, id, 100000, client)
+    expect(sent).toHaveLength(1)
+    expect(sent[0].options.idempotencyKey).toBe(`agent-message/${id}`)
+    expect(sent[0].payload.to).toEqual(['ln373@cantab.ac.uk'])
+    expect(sent[0].payload.template.variables.THREAD).toBe(first.token)
+    expect(database.query('SELECT state,email_id FROM notifications WHERE message_id=?').get(id)).toEqual({
+      state: 'sent',
+      email_id: 'provider-email-id'
+    })
+  } finally {
+    database.close()
+  }
+})
+
+test('notification retries respect backoff and provider retry-after; permanent errors stop retrying', async () => {
+  const { database, call, env } = await mailbox()
+  try {
+    const id = crypto.randomUUID()
+    await call('/s', { id, text: 'Retry check' })
+    const enabled = {
+      ...env,
+      RESEND_API_KEY: 'test-key',
+      RESEND_TEMPLATE_ID: 'template',
+      NOTIFY_TO: 'ln373@cantab.ac.uk',
+      APP_ENV: 'production'
+    }
+    let attempts = 0
+    const temporary = {
+      emails: {
+        async send() {
+          attempts++
+          return {
+            data: null,
+            error: { statusCode: 429, name: 'rate_limit_exceeded' },
+            headers: { 'retry-after': '300' }
+          }
+        }
+      }
+    }
+    await deliverNotification(enabled, id, 1000, temporary)
+    expect(database.query('SELECT state,next_attempt_at FROM notifications WHERE message_id=?').get(id)).toEqual({
+      state: 'pending',
+      next_attempt_at: 1300
+    })
+    await deliverNotification(enabled, id, 1299, temporary)
+    expect(attempts).toBe(1)
+    const permanent = {
+      emails: {
+        async send() {
+          return { data: null, error: { statusCode: 403, name: 'invalid_access' }, headers: {} }
+        }
+      }
+    }
+    await deliverNotification(enabled, id, 1300, permanent)
+    expect(database.query('SELECT state,last_error FROM notifications WHERE message_id=?').get(id)).toEqual({
+      state: 'failed',
+      last_error: 'invalid_access'
+    })
+    await deliverNotification(enabled, id, 5000, temporary)
+    expect(attempts).toBe(1)
+  } finally {
+    database.close()
+  }
+})
+
+test('notification retry window stops before provider idempotency expires', async () => {
+  const { database, call, env } = await mailbox()
+  try {
+    const id = crypto.randomUUID()
+    await call('/s', { id, text: 'Expired retry' })
+    database.query('UPDATE notifications SET first_attempt_at=1000 WHERE message_id=?').run(id)
+    const client = {
+      emails: {
+        async send() {
+          throw new Error('Must not resend outside idempotency window')
+        }
+      }
+    }
+    await deliverNotification(
+      {
+        ...env,
+        RESEND_API_KEY: 'key',
+        RESEND_TEMPLATE_ID: 'template',
+        NOTIFY_TO: 'ln373@cantab.ac.uk',
+        APP_ENV: 'production'
+      },
+      id,
+      1000 + 23 * 3600,
+      client
+    )
+    expect(database.query('SELECT state,last_error FROM notifications WHERE message_id=?').get(id)).toEqual({
+      state: 'failed',
+      last_error: 'retry_window_expired'
+    })
+  } finally {
+    database.close()
+  }
+})
+
+test('notification variables preserve the full maximum-length message without HTML injection or oversized fields', () => {
+  const text = "'".repeat(4000)
+  const variables = notificationVariables(
+    { name: 'AmberFox', recipient: 'researcher', thread: 'token', text, created_at: 'now' },
+    'production'
+  )
+  const parts = Object.entries(variables)
+    .filter(([key]) => key.startsWith('MESSAGE_'))
+    .map(([, value]) => value)
+  expect(parts.join('')).toBe('&#39;'.repeat(4000))
+  expect(parts.every((part) => part.length <= 1800)).toBe(true)
+  const escaped = notificationVariables(
+    { name: 'AmberFox', recipient: 'researcher', thread: 'token', text: '<script>&"', created_at: 'now' },
+    'production'
+  )
+  expect(escaped.MESSAGE_01).toBe('&lt;script&gt;&amp;&quot;')
+  expect([escaped.TEXT_01, escaped.TEXT_02, escaped.TEXT_03, escaped.TEXT_04, escaped.TEXT_05].join('')).toBe(
+    '<script>&"'
+  )
+  const unicode = notificationVariables(
+    { name: 'AmberFox', recipient: 'researcher', thread: 'token', text: 'a' + '😀'.repeat(3999), created_at: 'now' },
+    'production'
+  )
+  const unicodeParts = Object.entries(unicode)
+    .filter(([key]) => key.startsWith('TEXT_'))
+    .map(([, value]) => value)
+  expect(unicodeParts.join('')).toBe('a' + '😀'.repeat(3999))
+  expect(unicodeParts.every((value) => value.isWellFormed() && value.length <= 2000)).toBe(true)
+})
+
+test('provider outages do not prevent message storage and leave a durable retry', async () => {
+  const { database, env } = await mailbox()
+  Object.assign(env, {
+    RESEND_API_KEY: 'test-key',
+    RESEND_TEMPLATE_ID: 'template',
+    NOTIFY_TO: 'ln373@cantab.ac.uk',
+    APP_ENV: 'production'
+  })
+  const network = spyOn(globalThis, 'fetch').mockResolvedValue(
+    new Response(JSON.stringify({ name: 'internal_server_error', message: 'Temporary failure' }), {
+      status: 503,
+      headers: { 'Content-Type': 'application/json' }
+    })
+  )
+  try {
+    const pending = []
+    const id = crypto.randomUUID()
+    const response = await worker.fetch(
+      new Request(`https://mail.example/s?${new URLSearchParams({ id, text: 'Store despite email outage' })}`),
+      env,
+      {
+        waitUntil(promise) {
+          pending.push(promise)
+        }
+      }
+    )
+    expect(response.status).toBe(200)
+    await Promise.all(pending)
+    expect(database.query('SELECT text FROM messages WHERE id=?').get(id).text).toBe('Store despite email outage')
+    expect(database.query('SELECT state,attempts FROM notifications WHERE message_id=?').get(id)).toEqual({
+      state: 'pending',
+      attempts: 1
+    })
+  } finally {
+    network.mockRestore()
     database.close()
   }
 })

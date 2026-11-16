@@ -19,7 +19,9 @@ if (!['development', 'production'].includes(environment)) throw new Error('Inval
 const quote = (value: string) => `'${value.replaceAll("'", "''")}'`
 let sql: string
 if (operation === 'inbox') {
-  sql = `SELECT c.token AS thread, c.name, c.created_at, m.sender, m.recipient, m.text FROM conversations c JOIN messages m ON m.sequence = (SELECT MAX(sequence) FROM messages WHERE thread = c.token) ORDER BY m.sequence DESC LIMIT 50;`
+  sql = `SELECT c.token AS thread, c.name, c.created_at, m.sender, m.recipient, m.text, n.state AS notification, n.last_error FROM conversations c JOIN messages m ON m.sequence = (SELECT MAX(sequence) FROM messages WHERE thread = c.token) LEFT JOIN notifications n ON n.message_id = m.id ORDER BY m.sequence DESC LIMIT 50;`
+} else if (operation === 'notifications') {
+  sql = `SELECT c.name, m.recipient, m.id, n.state, n.attempts, n.next_attempt_at, n.email_id, n.last_error FROM notifications n JOIN messages m ON m.id = n.message_id JOIN conversations c ON c.token = m.thread WHERE n.state != 'sent' ORDER BY m.sequence DESC LIMIT 50;`
 } else if (operation === 'thread') {
   const thread = options.get('--thread') ?? ''
   if (!tokenPattern.test(thread)) throw new Error('A valid --thread is required')
@@ -34,7 +36,7 @@ if (operation === 'inbox') {
   sql = `INSERT INTO messages (id, thread, sender, recipient, text) VALUES (${quote(id)}, ${quote(thread)}, 'researcher', (SELECT name FROM conversations WHERE token = ${quote(thread)}), ${quote(text)}) ON CONFLICT(id) DO UPDATE SET text = CASE WHEN messages.thread = excluded.thread AND messages.sender = excluded.sender AND messages.text = excluded.text THEN messages.text ELSE NULL END; SELECT id, thread, sender, recipient, text FROM messages WHERE id = ${quote(id)};`
 } else {
   throw new Error(
-    'Use inbox, thread --thread TOKEN, or reply --thread TOKEN --text TEXT [--id UUID] [--env development|production] [--local]'
+    'Use inbox, notifications, thread --thread TOKEN, or reply --thread TOKEN --text TEXT [--id UUID] [--env development|production] [--local]'
   )
 }
 const command = Bun.spawn(

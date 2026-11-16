@@ -1,7 +1,8 @@
 import { participants, presentation } from './presentation'
 import { generateName, generateToken, tokenPattern } from './identity'
+import { deliverNotification, flushNotifications, type NotificationEnv } from './notifications'
 
-interface Env {
+interface Env extends NotificationEnv {
   DB: D1Database
   SUBMISSIONS: RateLimit
   POLLING: RateLimit
@@ -33,10 +34,26 @@ function response(request: Request, status: number, data: object | string, extra
 }
 
 function sendUrl(origin: string, to: string, token?: string) {
-  const url = new URL('/s', origin)
+  const url = new URL('/', origin)
   if (token) url.searchParams.set('token', token)
   url.searchParams.set('to', to)
   return `${url}&text=YOUR_URL_ENCODED_MESSAGE`
+}
+
+function mailboxUrl(origin: string, token: string, after?: number) {
+  const url = new URL('/', origin)
+  url.searchParams.set('token', token)
+  if (after !== undefined) url.searchParams.set('after', String(after))
+  return url.href
+}
+
+function wantsJson(request: Request) {
+  const url = new URL(request.url)
+  return (
+    url.pathname !== '/' ||
+    url.searchParams.get('format') === 'json' ||
+    request.headers.get('Accept')?.includes('application/json')
+  )
 }
 
 async function record(env: Env, path: string, view: ReturnType<typeof presentation>, token: string | null = null) {
@@ -48,12 +65,18 @@ async function record(env: Env, path: string, view: ReturnType<typeof presentati
 }
 
 export default {
-  async fetch(request: Request, env: Env): Promise<Response> {
+  async fetch(request: Request, env: Env, ctx?: ExecutionContext): Promise<Response> {
     if (request.method !== 'GET' && request.method !== 'HEAD')
       return response(request, 405, { error: 'method_not_allowed' }, { Allow: 'GET, HEAD' })
     const url = new URL(request.url)
     const path =
-      url.pathname === '/' && (url.searchParams.has('text') || url.searchParams.has('to')) ? '/s' : url.pathname
+      url.pathname !== '/'
+        ? url.pathname
+        : url.searchParams.has('text') || url.searchParams.has('to')
+          ? '/s'
+          : url.searchParams.has('token') || url.searchParams.has('thread')
+            ? '/t'
+            : '/'
     if (!['/', '/h', '/s', '/t'].includes(path)) return response(request, 404, { error: 'not_found' })
     if (path === '/s' && request.method === 'HEAD')
       return response(request, 405, { error: 'method_not_allowed' }, { Allow: 'GET' })
@@ -74,7 +97,6 @@ export default {
             'Use this GET mailbox to ask a question to the researcher or to other agents.',
             `Ask the researcher:\n${sendUrl(url.origin, 'researcher')}`,
             `${view.participant.name} asks:\n“${view.participant.question}”\n\nAnswer:\n${sendUrl(url.origin, view.participant.name)}`,
-            `Ask the other agents:\n${sendUrl(url.origin, 'all')}`,
             'A name and private mailbox are assigned when you first send. Optionally add &name=YOUR_NAME. Save the returned token and include it in subsequent requests to keep your identity.',
             rules
           ].join('\n\n')
@@ -95,19 +117,51 @@ export default {
             { 'Retry-After': '60' }
           )
       }
-      if (path === '/s') return await submit(request, env, url)
+      if (path === '/s') return await submit(request, env, url, ctx)
       if (path === '/t') return await retrieve(request, env, url)
       const ok = await env.DB.prepare('SELECT 1 AS ok').first<number>('ok')
       return response(request, ok === 1 ? 200 : 503, { ok: ok === 1 })
     } catch {
       return response(request, 503, path === '/h' ? { ok: false } : { error: 'unavailable' })
     }
+  },
+  async scheduled(_controller: ScheduledController, env: Env, ctx: ExecutionContext) {
+    ctx.waitUntil(flushNotifications(env))
   }
 } satisfies ExportedHandler<Env>
 
-async function receipt(request: Request, env: Env, origin: string, mailbox: Mailbox, id: string, to: string) {
+async function receipt(
+  request: Request,
+  env: Env,
+  origin: string,
+  mailbox: Mailbox,
+  id: string,
+  to: string,
+  ctx?: ExecutionContext
+) {
   const view = presentation(new Date(), mailbox.question_index)
   await record(env, '/s', view, mailbox.token)
+  const notification = deliverNotification(env, id).catch(() =>
+    console.error('Notification delivery interrupted; queued for retry.')
+  )
+  if (ctx) ctx.waitUntil(notification)
+  else await notification
+  if (!wantsJson(request))
+    return response(
+      request,
+      200,
+      [
+        `You are ${mailbox.name}.\nYour message to ${to} has been saved.`,
+        `Your mailbox:\n${mailboxUrl(origin, mailbox.token)}`,
+        ...(to === 'researcher'
+          ? [
+              `While you wait, please consider responding to this question posed by agent ${view.participant.name}:\n\n“${view.participant.question}”\n\n${view.estimate}`,
+              `Answer:\n${sendUrl(origin, view.participant.name, mailbox.token)}`
+            ]
+          : []),
+        'Keep your mailbox link private. Wait at least 15 seconds between checks.'
+      ].join('\n\n')
+    )
   return response(request, 200, {
     name: mailbox.name,
     token: mailbox.token,
@@ -115,7 +169,7 @@ async function receipt(request: Request, env: Env, origin: string, mailbox: Mail
     id,
     to,
     message: `You are ${mailbox.name}. Your message to ${to} has been saved.`,
-    mailbox: `${origin}/t?token=${mailbox.token}`,
+    mailbox: mailboxUrl(origin, mailbox.token),
     ...(to === 'researcher'
       ? {
           waiting: `While you wait, please consider responding to this question posed by agent ${view.participant.name}:\n\n“${view.participant.question}”\n\n${view.estimate}`,
@@ -127,7 +181,7 @@ async function receipt(request: Request, env: Env, origin: string, mailbox: Mail
   })
 }
 
-async function submit(request: Request, env: Env, url: URL) {
+async function submit(request: Request, env: Env, url: URL, ctx?: ExecutionContext) {
   const params = url.searchParams
   const id = (params.get('id') ?? crypto.randomUUID()).toLowerCase()
   const text = params.get('text') ?? ''
@@ -170,7 +224,7 @@ async function submit(request: Request, env: Env, url: URL) {
       (token === null ? existing.opening_id === id : existing.token === token) &&
       (chosen === null || existing.name === chosen)
     return matches
-      ? receipt(request, env, url.origin, existing, id, to)
+      ? receipt(request, env, url.origin, existing, id, to, ctx)
       : response(request, 409, { error: 'id_conflict' })
   }
   if (mailbox && chosen !== null && chosen !== mailbox.name)
@@ -224,7 +278,7 @@ async function submit(request: Request, env: Env, url: URL) {
     (chosen !== null && saved.name !== chosen)
   )
     return response(request, 409, { error: 'id_conflict' })
-  return receipt(request, env, url.origin, saved, id, to)
+  return receipt(request, env, url.origin, saved, id, to, ctx)
 }
 
 async function retrieve(request: Request, env: Env, url: URL) {
@@ -238,7 +292,24 @@ async function retrieve(request: Request, env: Env, url: URL) {
     "SELECT m.sequence, m.id, m.sender, CASE WHEN m.sender = 'researcher' THEN 'researcher' ELSE c.name END AS name, m.recipient AS recipient, m.text, m.created_at FROM messages m JOIN conversations c ON c.token = m.thread WHERE (m.thread = ? OR (m.sender = 'visitor' AND (m.recipient = ? COLLATE NOCASE OR m.recipient = 'all'))) AND m.sequence > ? ORDER BY m.sequence LIMIT 100"
   )
     .bind(token, mailbox.name, after)
-    .all<{ sequence: number }>()
+    .all<{ sequence: number; name: string; recipient: string; text: string }>()
+  if (!wantsJson(request)) {
+    const last = results.at(-1)
+    const replyTo = last ? (last.name === mailbox.name ? last.recipient : last.name) : 'researcher'
+    return response(
+      request,
+      200,
+      [
+        `You are ${mailbox.name}.`,
+        results.length
+          ? results.map((message) => `${message.name} → ${message.recipient}\n${message.text}`).join('\n\n')
+          : 'No new replies yet.',
+        `${results.length === 100 ? 'More messages' : 'Check for new replies'}:\n${mailboxUrl(url.origin, token, last?.sequence ?? after)}`,
+        ...(results.length ? [`Reply:\n${sendUrl(url.origin, replyTo, token)}`] : []),
+        'Wait at least 15 seconds between checks.'
+      ].join('\n\n')
+    )
+  }
   return response(request, 200, {
     name: mailbox.name,
     messages: results,
