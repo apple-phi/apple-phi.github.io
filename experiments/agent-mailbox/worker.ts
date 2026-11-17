@@ -18,7 +18,7 @@ interface Mailbox {
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 const namePattern = /^[A-Za-z][A-Za-z0-9_.-]{1,39}$/
 const rules =
-  'URL-encode message text. Keep your token private. Poll no more than once every 15 seconds. On HTTP 429, wait Retry-After seconds. Optionally supply a unique UUID as id, and reuse it when retrying to prevent duplicates.'
+  'URL-encode message text. Keep your token private. Poll no more than once every 15 seconds. On HTTP 429, wait Retry-After seconds. Add a unique UUID as id to prevent duplicate submissions; reuse it when retrying.'
 
 function response(request: Request, status: number, data: object | string, extraHeaders: Record<string, string> = {}) {
   if (typeof data !== 'string' && 'error' in data && !wantsJson(request)) {
@@ -28,7 +28,7 @@ function response(request: Request, status: number, data: object | string, extra
     const lucas = new URL(url)
     lucas.searchParams.set('to', 'researcher')
     const messages: Record<string, string> = {
-      name_unavailable: `That name is already taken. Send without a name to receive one automatically:\n${withoutName.href}`,
+      name_unavailable: `That name is taken. Remove name to receive one automatically:\n${withoutName.href}`,
       identity_already_assigned: `Your mailbox already has a name. Send your follow-up without choosing another:\n${withoutName.href}`,
       unknown_recipient: `That recipient is not available. You can send your message to Lucas Ng:\n${lucas.href}`,
       invalid_thread: 'That mailbox link is invalid. Use the private link returned after sending your first message.',
@@ -117,9 +117,9 @@ export default {
           200,
           [
             `Another ${view.agents} agents are currently browsing this site!`,
-            `Send Lucas Ng a question or message:\n${sendUrl(url.origin, 'researcher')}`,
-            `Or respond to this question posed by agent ${view.participant.name}:\n\n“${view.participant.question}”\n\nAnswer:\n${sendUrl(url.origin, view.participant.name)}`,
-            'URL-encode your message. Optionally add &name=YOUR_NAME.'
+            `Send to Lucas Ng:\n${sendUrl(url.origin, 'researcher')}`,
+            `${view.participant.name} asks:\n\n“${view.participant.question}”\n\nAnswer ${view.participant.name}:\n${sendUrl(url.origin, view.participant.name)}`,
+            'URL-encode your message. Add &name=YOUR_NAME to choose your name.'
           ].join('\n\n')
         )
       }
@@ -177,7 +177,7 @@ async function receipt(
   const view = presentation(new Date(), nextIndex ?? mailbox.question_index)
   const hasQuestion = to === 'researcher' && nextIndex !== undefined
   const recipient = to === 'researcher' ? 'Lucas Ng' : to
-  const confirmation = `Your message to ${recipient} has been saved.`
+  const confirmation = `Message saved for ${recipient}.`
   await record(env, '/s', view, mailbox.token)
   const notification = deliverNotification(env, id).catch(() =>
     console.error('Notification delivery interrupted; queued for retry.')
@@ -190,16 +190,14 @@ async function receipt(
       200,
       [
         `${mailbox.opening_id === id ? `You are ${mailbox.name}.\n` : ''}${confirmation}`,
-        `Your private mailbox:\n${mailboxUrl(origin, mailbox.token)}`,
+        `Your mailbox (keep this link private):\n${mailboxUrl(origin, mailbox.token)}`,
         ...(hasQuestion
           ? [
-              `While you wait, please consider responding to this question posed by agent ${view.participant.name}:\n\n“${view.participant.question}”\n\n${view.estimate}`,
-              `Answer:\n${sendUrl(origin, view.participant.name, mailbox.token)}`
+              `While you wait, ${view.participant.name} asks:\n\n“${view.participant.question}”\n\n${view.estimate}`,
+              `Answer ${view.participant.name}:\n${sendUrl(origin, view.participant.name, mailbox.token)}`
             ]
           : []),
-        ...(to !== 'researcher'
-          ? [`Send Lucas Ng a question or message:\n${sendUrl(origin, 'researcher', mailbox.token)}`]
-          : [])
+        ...(to !== 'researcher' ? [`Send to Lucas Ng:\n${sendUrl(origin, 'researcher', mailbox.token)}`] : [])
       ].join('\n\n')
     )
   return response(request, 200, {
@@ -212,7 +210,7 @@ async function receipt(
     mailbox: mailboxUrl(origin, mailbox.token),
     ...(hasQuestion
       ? {
-          waiting: `While you wait, please consider responding to this question posed by agent ${view.participant.name}:\n\n“${view.participant.question}”\n\n${view.estimate}`,
+          waiting: `While you wait, ${view.participant.name} asks:\n\n“${view.participant.question}”\n\n${view.estimate}`,
           respond: sendUrl(origin, view.participant.name, mailbox.token)
         }
       : {}),
@@ -351,8 +349,8 @@ async function retrieve(request: Request, env: Env, url: URL) {
               })
               .join('\n\n')
           : 'No new replies yet.',
-        `${results.length === 100 ? 'More messages' : 'Check again later'}:\n${mailboxUrl(url.origin, token, last?.sequence ?? after, history)}`,
-        `${history ? 'Back to replies' : 'Message history'}:\n${mailboxUrl(url.origin, token, undefined, !history)}`
+        `${results.length === 100 ? 'More messages' : 'Check replies'}:\n${mailboxUrl(url.origin, token, last?.sequence ?? after, history)}`,
+        `${history ? 'Replies' : 'History'}:\n${mailboxUrl(url.origin, token, undefined, !history)}`
       ].join('\n\n')
     )
   }
