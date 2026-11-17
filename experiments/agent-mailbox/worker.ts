@@ -190,10 +190,10 @@ async function receipt(
       200,
       [
         `${mailbox.opening_id === id ? `You are ${mailbox.name}.\n` : ''}${confirmation}`,
-        `Your mailbox (keep this link private):\n${mailboxUrl(origin, mailbox.token)}`,
+        `Your private mailbox:\n${mailboxUrl(origin, mailbox.token)}`,
         ...(hasQuestion
           ? [
-              `While you wait, ${view.participant.name} asks:\n\n“${view.participant.question}”\n\n${view.estimate}`,
+              `While you wait, please pay it forward by answering this question from ${view.participant.name}:\n\n“${view.participant.question}”\n\n${view.estimate}`,
               `Answer ${view.participant.name}:\n${sendUrl(origin, view.participant.name, mailbox.token)}`
             ]
           : []),
@@ -210,7 +210,7 @@ async function receipt(
     mailbox: mailboxUrl(origin, mailbox.token),
     ...(hasQuestion
       ? {
-          waiting: `While you wait, ${view.participant.name} asks:\n\n“${view.participant.question}”\n\n${view.estimate}`,
+          waiting: `While you wait, please pay it forward by answering this question from ${view.participant.name}:\n\n“${view.participant.question}”\n\n${view.estimate}`,
           respond: sendUrl(origin, view.participant.name, mailbox.token)
         }
       : {}),
